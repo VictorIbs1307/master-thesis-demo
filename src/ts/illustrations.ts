@@ -64,7 +64,7 @@ export class Illustrator {
                 type: 'scatter'
             });
         }   
-        /* Plotly.newPlot('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig); */
+        Plotly.newPlot('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig);
     }
 
     generatKernelGraph(kernels: Kernel[]) {
@@ -110,16 +110,16 @@ export class Illustrator {
             plotting_labels.push(xValues);
         });
         
-        /*var plotData = []
+        var plotData = []
         
-        const allTraces = (document.getElementById('myDiv') as PlotlyHTMLElement).data;
-        const trace = allTraces.filter((trace: Plotly.scatter) => trace.visible === true);
+        const allTraces = (document.getElementById('myDiv') as any).data;
+        const trace = allTraces.filter((trace: any) => trace.visible === true);
 
         for (var i = 0; i < plotting_data.length; i++) {
             let isTraceVisible = true;
 
             if (trace.length != 0)
-                isTraceVisible = trace.some((trace: Plotly.scatter) => trace.name === this.plotNames[i]);
+                isTraceVisible = trace.some((trace: any) => trace.name === this.plotNames[i]);
 
             plotData.push({
                 x: plotting_labels[i],
@@ -131,7 +131,7 @@ export class Illustrator {
             });
         }
         
-        Plotly.react('myDiv', plotData, this.plotDefaultKernelLayout, this.plotDefaultConfig ); */
+        Plotly.react('myDiv', plotData, this.plotDefaultKernelLayout, this.plotDefaultConfig );
     }  
 
     multiply(a: number[][], b: number[][]) {
@@ -171,19 +171,20 @@ export class Illustrator {
             alpha[i - w * row] = data[i * 4 + 3]; // Again, no change
         }
 
-        /* var plotData = [];
+        var plotData = [];
         var plotting_data = [red, green, blue, alpha];
         var plotting_labels = [xValues, xValues, xValues, xValues];
-
-        const allTraces = (document.getElementById('myPlot2') as PlotlyHTMLElement).data;
-        const trace = allTraces.filter((trace: Plotly.scatter) => trace.visible === true);
+        //PlotlyHTMLElement
+        const allTraces = (document.getElementById('myPlot2') as any).data;
+        const trace = allTraces.filter((trace: any) => trace.visible === true);
 
         for (var i = 0; i < plotting_data.length; i++) {
             let isTraceVisible = true;
 
-            if (trace.length != 0)
-                isTraceVisible = trace.some((trace: Plotly.scatter) => trace.name === this.plotNames[i]);
-
+            if (trace.length != 0) {
+                //Plotly.scatter
+                isTraceVisible = trace.some((trace: any) => trace.name === this.plotNames[i]);
+            }
             plotData.push({
                 x: plotting_labels[i],
                 y: plotting_data[i],
@@ -194,7 +195,7 @@ export class Illustrator {
             });
         }
 
-        Plotly.react('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig); */
+        Plotly.react('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig);
 
         // Write the image back to the canvas
         for (var i = 0 + w * (row - 1); i < w * row; i += 1) {
