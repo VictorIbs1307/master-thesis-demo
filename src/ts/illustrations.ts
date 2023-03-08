@@ -1,7 +1,7 @@
 import { Kernel } from "./kernel"
 
-// @ts-ignore
-import Plotly, { PlotlyHTMLElement } from 'plotly.js-dist';
+/* import Plotly, { PlotlyHTMLElement } from 'plotly.js-dist'; */
+var Plotly = require('plotly.js-dist-min')
 
 export class Illustrator {
     plotColors 
@@ -64,7 +64,7 @@ export class Illustrator {
                 type: 'scatter'
             });
         }   
-        Plotly.newPlot('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig);
+        /* Plotly.newPlot('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig); */
     }
 
     generatKernelGraph(kernels: Kernel[]) {
@@ -110,7 +110,7 @@ export class Illustrator {
             plotting_labels.push(xValues);
         });
         
-        var plotData = []
+        /*var plotData = []
         
         const allTraces = (document.getElementById('myDiv') as PlotlyHTMLElement).data;
         const trace = allTraces.filter((trace: Plotly.scatter) => trace.visible === true);
@@ -131,7 +131,7 @@ export class Illustrator {
             });
         }
         
-        Plotly.react('myDiv', plotData, this.plotDefaultKernelLayout, this.plotDefaultConfig );
+        Plotly.react('myDiv', plotData, this.plotDefaultKernelLayout, this.plotDefaultConfig ); */
     }  
 
     multiply(a: number[][], b: number[][]) {
@@ -171,7 +171,7 @@ export class Illustrator {
             alpha[i - w * row] = data[i * 4 + 3]; // Again, no change
         }
 
-        var plotData = [];
+        /* var plotData = [];
         var plotting_data = [red, green, blue, alpha];
         var plotting_labels = [xValues, xValues, xValues, xValues];
 
@@ -194,7 +194,7 @@ export class Illustrator {
             });
         }
 
-        Plotly.react('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig);
+        Plotly.react('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig); */
 
         // Write the image back to the canvas
         for (var i = 0 + w * (row - 1); i < w * row; i += 1) {

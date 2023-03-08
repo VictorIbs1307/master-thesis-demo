@@ -1,7 +1,7 @@
 // #region imports
 import { importFileInit } from "./ts/importFile"
-import { Filter } from "./ts/filter";
-import { Illustrator } from "./ts/illustrations"; 
+/* import { Filter } from "./ts/filter";*/
+import { Illustrator } from "./ts/illustrations";  
 // #endregion
 // #region variables
 let resetButton = document.querySelector<HTMLInputElement>('#reset-all');
@@ -21,15 +21,15 @@ let timeFiltersAplliedValues = document.querySelectorAll<HTMLInputElement>('[id=
 let imageRowSliceValue = document.querySelector<HTMLInputElement>('#image-row-slice-value');
 let saveButton = document.querySelector<HTMLInputElement>('#save');
 
-let filter = new Filter();
+/* let filter = new Filter();*/
 let illustrator = new Illustrator();
-
+ 
 // #endregion
 
 function init() {
     importFileInit(imageRowSlice!);
 
-    resetButton.addEventListener("click", function() {
+    resetButton!.addEventListener("click", function() {
         resetAllOptions();
     });
 
@@ -73,12 +73,12 @@ function init() {
         });
     };
 
-    imageRowSlice.addEventListener('input', function() {
+    imageRowSlice!.addEventListener('input', function() {
         imageRowSliceValue!.value = imageRowSlice!.value;
         update();
     }, false);
 
-    saveButton.addEventListener('click', () => {
+    saveButton!.addEventListener('click', () => {
         const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
         const filename = window.prompt('Enter a filename', 'image.png');
         if (filename) {
@@ -91,16 +91,17 @@ function init() {
     });
 
     illustrator.initKernelGraph();
-    illustrator.initFrequencyGraph(); 
+    illustrator.initFrequencyGraph();  
 }
 
 
 function update() {
-    createKernels();
-    applyKernel(); 
+    /* createKernels();
+    applyKernel();  */
+    console.log("hi!!");
 }
 
-function createKernels(){
+/* function createKernels(){
     filter.kernels.forEach((kernel, i: number) => {
         kernel.subtract = blurOrSharpenCheckboxs[i].checked;
         
@@ -125,7 +126,7 @@ function applyKernel() {
     var context = canvas.getContext('2d');
     var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
 
-    filter.applyToImage(pixels);
+    //filter.applyToImage(pixels);
     illustrator.generatKernelGraph(filter.kernels);
     illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));
 
@@ -134,7 +135,7 @@ function applyKernel() {
     var context = canvas2.getContext('2d');
     context.putImageData(pixels, 0, 0);
 }
-
+*/
 function resetAllOptions() {
     for (let i = 0; i < kernelSizes.length; i++) {
         kernalSizesValues[i].value = "0";
@@ -161,7 +162,7 @@ function resetAllOptions() {
     // Show the processed image
     const canvas2 = document.getElementById("ProcessCanvas") as HTMLCanvasElement;
     var context = canvas2.getContext('2d');
-    context.putImageData(pixels, 0, 0);
+    context!.putImageData(pixels, 0, 0);
 }
-
+ 
 init() 

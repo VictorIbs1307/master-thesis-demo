@@ -49,8 +49,8 @@ function drawFrame(source: HTMLImageElement | HTMLVideoElement) {
 
     canvas.width = width;
     canvas.height = height;
-    context.drawImage(source, 0, 0, width, height);
+    context!.drawImage(source, 0, 0, width, height);
     canvas2.width = width
     canvas2.height = height;
-    context2.drawImage(source, 0, 0, width, height);
+    context2!.drawImage(source, 0, 0, width, height);
 }

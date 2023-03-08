@@ -1,7 +1,7 @@
 export class Kernel {
-    sigma: number
-    sigma2: number
-    kernelSize: number
+    sigma: number = 0
+    sigma2: number = 0
+    kernelSize: number = 0
     subtract = false
     self: Float32Array = new Float32Array();
 
