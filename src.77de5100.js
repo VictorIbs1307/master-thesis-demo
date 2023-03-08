@@ -270,15 +270,15 @@ var Filter = /** @class */function () {
   function Filter() {
     this.kernels = [new kernel_1.Kernel(), new kernel_1.Kernel(), new kernel_1.Kernel()];
   }
-  Filter.prototype.applyToImage = function (pixels) {
+  Filter.prototype.applyToImage = function (pixels, timeFiltersApllied) {
     var _this = this;
     this.kernels.forEach(function (kernel, i) {
       if (kernel.sigma !== 0) {
-        _this.applyKernel(pixels, i, kernel.self, kernel.subtract);
+        _this.applyKernel(pixels, i, kernel.self, kernel.subtract, timeFiltersApllied[i]);
       }
     });
   };
-  Filter.prototype.applyKernel = function (pixels, colorChannel, kernel, subtract) {
+  Filter.prototype.applyKernel = function (pixels, colorChannel, kernel, subtract, timeFiltersApllied) {
     if (pixels !== undefined && pixels !== null) {
       var data = pixels.data;
       var w = pixels.width;
@@ -286,30 +286,32 @@ var Filter = /** @class */function () {
       var buff = new Uint8Array(w * h);
       var mk = Math.floor(kernel.length / 2);
       var kl = kernel.length;
-      // First step process columns
-      for (var j = 0, hw = 0; j < h; j++, hw += w) {
-        for (var i = 0; i < w; i++) {
-          var sum = 0;
-          for (var k = 0; k < kl; k++) {
-            var col = i + (k - mk);
-            col = col < 0 ? 0 : col >= w ? w - 1 : col;
-            sum += data[(hw + col) * 4 + colorChannel] * kernel[k];
+      for (var times = 1; times <= timeFiltersApllied; times++) {
+        // First step process columns
+        for (var j = 0, hw = 0; j < h; j++, hw += w) {
+          for (var i = 0; i < w; i++) {
+            var sum = 0;
+            for (var k = 0; k < kl; k++) {
+              var col = i + (k - mk);
+              col = col < 0 ? 0 : col >= w ? w - 1 : col;
+              sum += data[(hw + col) * 4 + colorChannel] * kernel[k];
+            }
+            buff[hw + i] = sum;
           }
-          buff[hw + i] = sum;
         }
-      }
-      // Second step process rows
-      for (var j = 0, offset = 0; j < h; j++, offset += w) {
-        for (var i = 0; i < w; i++) {
-          var sum = 0;
-          for (k = 0; k < kl; k++) {
-            var row = j + (k - mk);
-            row = row < 0 ? 0 : row >= h ? h - 1 : row;
-            sum += buff[row * w + i] * kernel[k];
-          }
-          var off = (j * w + i) * 4;
-          if (!subtract) data[off + colorChannel] = sum;else {
-            data[off + colorChannel] = data[off + colorChannel] + (data[off + colorChannel] - sum);
+        // Second step process rows
+        for (var j = 0, offset = 0; j < h; j++, offset += w) {
+          for (var i = 0; i < w; i++) {
+            var sum = 0;
+            for (k = 0; k < kl; k++) {
+              var row = j + (k - mk);
+              row = row < 0 ? 0 : row >= h ? h - 1 : row;
+              sum += buff[row * w + i] * kernel[k];
+            }
+            var off = (j * w + i) * 4;
+            if (!subtract) data[off + colorChannel] = sum;else {
+              data[off + colorChannel] = data[off + colorChannel] + (data[off + colorChannel] - sum);
+            }
           }
         }
       }
@@ -2711,7 +2713,10 @@ function applyKernel() {
   var canvas = document.getElementById("Mycanvas");
   var context = canvas.getContext('2d');
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-  filter.applyToImage(pixels);
+  var timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(function (input) {
+    return parseInt(input.value);
+  });
+  filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
   illustrator.generatKernelGraph(filter.kernels);
   illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice.value));
   // Show the processed image
@@ -2772,7 +2777,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41683" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52048" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
