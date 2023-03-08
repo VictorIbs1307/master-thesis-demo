@@ -176,7 +176,149 @@ function drawFrame(source) {
   canvas2.height = height;
   context2.drawImage(source, 0, 0, width, height);
 }
-},{}],"../node_modules/base64-js/index.js":[function(require,module,exports) {
+},{}],"ts/kernel.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var Kernel = /** @class */function () {
+  function Kernel() {
+    this.sigma = 0;
+    this.sigma2 = 0;
+    this.kernelSize = 0;
+    this.subtract = false;
+    this.self = new Float32Array();
+    /*     printMatrix() {
+            var k = [];
+            for (var i = 0; i < this.self.length; i++) {
+                k.push(kernel[i] / kernel[0]);
+            }
+    
+            var k_t = []
+            for (var i = 0; i < k.length; i++) {
+                k_t.push([k[i]])
+            };
+    
+            var k_m = multiply(k_t, [k]);
+    
+            var k_m_sum = k_m.reduce(function(a, b) { return a.concat(b) })
+                .reduce(function(a, b) { return a + b });
+    
+            for (var row = 0; row < k_m.length; row++) {
+                for (var col = 0; col < k_m[0].length; col++) {
+                    k_m[row][col] = k_m[row][col] / k_m_sum;
+                }
+            }
+            console.log(k_m)
+        } */
+  }
+
+  Kernel.prototype.initGauss = function (sigma, sigma2, kernelSize) {
+    this.sigma = sigma;
+    this.sigma2 = sigma2;
+    if (sigma2 == 0) this.sigma2 = this.sigma;
+    this.kernelSize = kernelSize;
+    var GAUSSKERN = 6.0;
+    var dim = 0;
+    if (kernelSize != 0) dim = kernelSize;else dim = Math.max(3.0, GAUSSKERN * this.sigma);
+    var sqrtSigmaPi2 = Math.sqrt(Math.PI * 2.0) * this.sigma;
+    var s2 = 2.0 * this.sigma * this.sigma2;
+    var sum = 0.0;
+    var kernel = new Float32Array(dim - Number(!(dim & 1))); // Make it odd number
+    var half = kernel.length / 2;
+    for (var j = 0, i = -half; j < kernel.length; i++, j++) {
+      kernel[j] = Math.exp(-(i * i) / s2) / sqrtSigmaPi2;
+      sum += kernel[j];
+    }
+    // Normalize the gaussian kernel to prevent image darkening/brightening
+    for (var i = 0; i < dim; i++) {
+      kernel[i] /= sum;
+    }
+    this.self = kernel;
+  };
+  Kernel.prototype.initBoxKernel = function (kernelSize) {
+    this.sigma = 1;
+    this.sigma2 = 1;
+    this.kernelSize = kernelSize;
+    var dim = 0;
+    if (kernelSize != 0) dim = kernelSize;else dim = 3;
+    var sum = 0.0;
+    var kernel = new Float32Array(dim - Number(!(dim & 1))); // Make it odd number
+    var half = kernel.length / 2;
+    for (var j = 0, i = -half; j < kernel.length; i++, j++) {
+      kernel[j] = 1;
+      sum += kernel[j];
+    }
+    // Normalize the kernel to prevent image darkening/brightening
+    for (var i = 0; i < dim; i++) {
+      kernel[i] /= sum;
+    }
+    this.self = kernel;
+  };
+  return Kernel;
+}();
+exports.Kernel = Kernel;
+},{}],"ts/filter.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var kernel_1 = require("./kernel");
+var Filter = /** @class */function () {
+  function Filter() {
+    this.kernels = [new kernel_1.Kernel(), new kernel_1.Kernel(), new kernel_1.Kernel()];
+  }
+  Filter.prototype.applyToImage = function (pixels) {
+    var _this = this;
+    this.kernels.forEach(function (kernel, i) {
+      if (kernel.sigma !== 0) {
+        _this.applyKernel(pixels, i, kernel.self, kernel.subtract);
+      }
+    });
+  };
+  Filter.prototype.applyKernel = function (pixels, colorChannel, kernel, subtract) {
+    if (pixels !== undefined && pixels !== null) {
+      var data = pixels.data;
+      var w = pixels.width;
+      var h = pixels.height;
+      var buff = new Uint8Array(w * h);
+      var mk = Math.floor(kernel.length / 2);
+      var kl = kernel.length;
+      // First step process columns
+      for (var j = 0, hw = 0; j < h; j++, hw += w) {
+        for (var i = 0; i < w; i++) {
+          var sum = 0;
+          for (var k = 0; k < kl; k++) {
+            var col = i + (k - mk);
+            col = col < 0 ? 0 : col >= w ? w - 1 : col;
+            sum += data[(hw + col) * 4 + colorChannel] * kernel[k];
+          }
+          buff[hw + i] = sum;
+        }
+      }
+      // Second step process rows
+      for (var j = 0, offset = 0; j < h; j++, offset += w) {
+        for (var i = 0; i < w; i++) {
+          var sum = 0;
+          for (k = 0; k < kl; k++) {
+            var row = j + (k - mk);
+            row = row < 0 ? 0 : row >= h ? h - 1 : row;
+            sum += buff[row * w + i] * kernel[k];
+          }
+          var off = (j * w + i) * 4;
+          if (!subtract) data[off + colorChannel] = sum;else {
+            data[off + colorChannel] = data[off + colorChannel] + (data[off + colorChannel] - sum);
+          }
+        }
+      }
+    }
+  };
+  return Filter;
+}();
+exports.Filter = Filter;
+},{"./kernel":"ts/kernel.ts"}],"../node_modules/base64-js/index.js":[function(require,module,exports) {
 'use strict'
 
 exports.byteLength = byteLength
@@ -2289,9 +2431,8 @@ var Illustrator = /** @class */function () {
         type: 'scatter'
       });
     }
-    /* Plotly.newPlot('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig); */
+    Plotly.newPlot('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig);
   };
-
   Illustrator.prototype.generatKernelGraph = function (kernels) {
     var _this = this;
     var plotting_data = [];
@@ -2337,27 +2478,30 @@ var Illustrator = /** @class */function () {
       plotting_data.push(yValues);
       plotting_labels.push(xValues);
     });
-    /*var plotData = []
-    
-    const allTraces = (document.getElementById('myDiv') as PlotlyHTMLElement).data;
-    const trace = allTraces.filter((trace: Plotly.scatter) => trace.visible === true);
-     for (var i = 0; i < plotting_data.length; i++) {
-        let isTraceVisible = true;
-         if (trace.length != 0)
-            isTraceVisible = trace.some((trace: Plotly.scatter) => trace.name === this.plotNames[i]);
-         plotData.push({
-            x: plotting_labels[i],
-            y: plotting_data[i],
-            name: this.plotNames[i],
-            line: { shape: 'spline', color: this.plotColors[i] },
-            type: 'scatter',
-            visible: isTraceVisible ? true : "legendonly"
-        });
+    var plotData = [];
+    var allTraces = document.getElementById('myDiv').data;
+    var trace = allTraces.filter(function (trace) {
+      return trace.visible === true;
+    });
+    for (var i = 0; i < plotting_data.length; i++) {
+      var isTraceVisible = true;
+      if (trace.length != 0) isTraceVisible = trace.some(function (trace) {
+        return trace.name === _this.plotNames[i];
+      });
+      plotData.push({
+        x: plotting_labels[i],
+        y: plotting_data[i],
+        name: this.plotNames[i],
+        line: {
+          shape: 'spline',
+          color: this.plotColors[i]
+        },
+        type: 'scatter',
+        visible: isTraceVisible ? true : "legendonly"
+      });
     }
-    
-    Plotly.react('myDiv', plotData, this.plotDefaultKernelLayout, this.plotDefaultConfig ); */
+    Plotly.react('myDiv', plotData, this.plotDefaultKernelLayout, this.plotDefaultConfig);
   };
-
   Illustrator.prototype.multiply = function (a, b) {
     var aNumRows = a.length,
       aNumCols = a[0].length,
@@ -2376,6 +2520,7 @@ var Illustrator = /** @class */function () {
     return m;
   };
   Illustrator.prototype.generatFrequencyGraph = function (pixels, row) {
+    var _this = this;
     var data = pixels.data;
     var w = pixels.width;
     var red = new Array();
@@ -2391,25 +2536,35 @@ var Illustrator = /** @class */function () {
       blue[i - w * row] = data[i * 4 + 2]; // no change, blue == 0 for black and for yellow
       alpha[i - w * row] = data[i * 4 + 3]; // Again, no change
     }
-    /* var plotData = [];
+
+    var plotData = [];
     var plotting_data = [red, green, blue, alpha];
     var plotting_labels = [xValues, xValues, xValues, xValues];
-     const allTraces = (document.getElementById('myPlot2') as PlotlyHTMLElement).data;
-    const trace = allTraces.filter((trace: Plotly.scatter) => trace.visible === true);
-     for (var i = 0; i < plotting_data.length; i++) {
-        let isTraceVisible = true;
-         if (trace.length != 0)
-            isTraceVisible = trace.some((trace: Plotly.scatter) => trace.name === this.plotNames[i]);
-         plotData.push({
-            x: plotting_labels[i],
-            y: plotting_data[i],
-            name: this.plotNames[i],
-            line: { color: this.plotColors[i] },
-            type: 'scatter',
-            visible: isTraceVisible ? true : "legendonly"
+    //PlotlyHTMLElement
+    var allTraces = document.getElementById('myPlot2').data;
+    var trace = allTraces.filter(function (trace) {
+      return trace.visible === true;
+    });
+    for (var i = 0; i < plotting_data.length; i++) {
+      var isTraceVisible = true;
+      if (trace.length != 0) {
+        //Plotly.scatter
+        isTraceVisible = trace.some(function (trace) {
+          return trace.name === _this.plotNames[i];
         });
+      }
+      plotData.push({
+        x: plotting_labels[i],
+        y: plotting_data[i],
+        name: this.plotNames[i],
+        line: {
+          color: this.plotColors[i]
+        },
+        type: 'scatter',
+        visible: isTraceVisible ? true : "legendonly"
+      });
     }
-     Plotly.react('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig); */
+    Plotly.react('myPlot2', plotData, this.plotDefaultFrequencyLayout, this.plotDefaultConfig);
     // Write the image back to the canvas
     for (var i = 0 + w * (row - 1); i < w * row; i += 1) {
       data[i * 4] = 0;
@@ -2435,7 +2590,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 // #region imports
 var importFile_1 = require("./ts/importFile");
-/* import { Filter } from "./ts/filter";*/
+var filter_1 = require("./ts/filter");
 var illustrations_1 = require("./ts/illustrations");
 // #endregion
 // #region variables
@@ -2453,7 +2608,7 @@ var sigmaValues2 = document.querySelectorAll('[id=sigma-value2]');
 var timeFiltersAplliedValues = document.querySelectorAll('[id=time-filter-applied-value]');
 var imageRowSliceValue = document.querySelector('#image-row-slice-value');
 var saveButton = document.querySelector('#save');
-/* let filter = new Filter();*/
+var filter = new filter_1.Filter();
 var illustrator = new illustrations_1.Illustrator();
 // #endregion
 function init() {
@@ -2532,45 +2687,38 @@ function init() {
   illustrator.initFrequencyGraph();
 }
 function update() {
-  /* createKernels();
-  applyKernel();  */
-  console.log("hi!!");
+  createKernels();
+  applyKernel();
 }
-/* function createKernels(){
-    filter.kernels.forEach((kernel, i: number) => {
-        kernel.subtract = blurOrSharpenCheckboxs[i].checked;
-        
-        switch (filterTypes[i].value) {
-            case "gauss":
-                kernel.initGauss(parseFloat(sigmas[i].value), parseFloat(sigmas2[i].value), parseFloat(kernelSizes[i].value));
-                break;
-            case "boxBlur":
-                kernel.initBoxKernel(parseFloat(kernelSizes[i].value));
-                break;
-            default:
-                console.log("Invalid filter type");
-                break;
-        }
-    });
-    
+function createKernels() {
+  filter.kernels.forEach(function (kernel, i) {
+    kernel.subtract = blurOrSharpenCheckboxs[i].checked;
+    switch (filterTypes[i].value) {
+      case "gauss":
+        kernel.initGauss(parseFloat(sigmas[i].value), parseFloat(sigmas2[i].value), parseFloat(kernelSizes[i].value));
+        break;
+      case "boxBlur":
+        kernel.initBoxKernel(parseFloat(kernelSizes[i].value));
+        break;
+      default:
+        console.log("Invalid filter type");
+        break;
+    }
+  });
 }
-
 function applyKernel() {
-    // Get data from imported image
-    const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
-    var context = canvas.getContext('2d');
-    var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
-
-    //filter.applyToImage(pixels);
-    illustrator.generatKernelGraph(filter.kernels);
-    illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));
-
-    // Show the processed image
-    const canvas2 = document.getElementById("ProcessCanvas") as HTMLCanvasElement;
-    var context = canvas2.getContext('2d');
-    context.putImageData(pixels, 0, 0);
+  // Get data from imported image
+  var canvas = document.getElementById("Mycanvas");
+  var context = canvas.getContext('2d');
+  var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+  filter.applyToImage(pixels);
+  illustrator.generatKernelGraph(filter.kernels);
+  illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice.value));
+  // Show the processed image
+  var canvas2 = document.getElementById("ProcessCanvas");
+  var context = canvas2.getContext('2d');
+  context.putImageData(pixels, 0, 0);
 }
-*/
 function resetAllOptions() {
   for (var i = 0; i < kernelSizes.length; i++) {
     kernalSizesValues[i].value = "0";
@@ -2599,7 +2747,7 @@ function resetAllOptions() {
   context.putImageData(pixels, 0, 0);
 }
 init();
-},{"./ts/importFile":"ts/importFile.ts","./ts/illustrations":"ts/illustrations.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./ts/importFile":"ts/importFile.ts","./ts/filter":"ts/filter.ts","./ts/illustrations":"ts/illustrations.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2624,7 +2772,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46703" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "41683" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
