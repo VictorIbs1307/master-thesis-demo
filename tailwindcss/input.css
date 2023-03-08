@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer components {
+    input[type="range"] {
+        @apply appearance-none h-1 rounded-full
+    }
+}
