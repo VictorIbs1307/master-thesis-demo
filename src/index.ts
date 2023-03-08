@@ -103,13 +103,13 @@ function update() {
 function createKernels(){
     filter.kernels.forEach((kernel, i: number) => {
         kernel.subtract = blurOrSharpenCheckboxs[i].checked;
-
+        
         switch (filterTypes[i].value) {
             case "gauss":
-                kernel.initGauss(parseInt(sigmas[i].value), parseInt(sigmas2[i].value), parseInt(kernelSizes[i].value));
+                kernel.initGauss(parseFloat(sigmas[i].value), parseFloat(sigmas2[i].value), parseFloat(kernelSizes[i].value));
                 break;
             case "boxBlur":
-                kernel.initBoxKernel(parseInt(kernelSizes[i].value));
+                kernel.initBoxKernel(parseFloat(kernelSizes[i].value));
                 break;
             default:
                 console.log("Invalid filter type");

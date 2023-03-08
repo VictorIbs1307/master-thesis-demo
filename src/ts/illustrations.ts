@@ -33,8 +33,8 @@ export class Illustrator {
     
 
     initKernelGraph(){
-        const plotting_data = [[null], [null], [null]];
-        const plotting_labels = [[null], [null], [null]];
+        const plotting_data: string | any[] = [[null], [null], [null]];
+        const plotting_labels: any[] = [[null], [null], [null]];
 
         var plotData = []
         for (var i = 0; i < plotting_data.length; i++) {
@@ -51,8 +51,8 @@ export class Illustrator {
     }
 
     initFrequencyGraph(){
-        const plotting_data = [[null], [null], [null], [null]];
-        const plotting_labels = [[null], [null], [null], [null]];
+        const plotting_data: string | any[] = [[null], [null], [null], [null]];
+        const plotting_labels: any[] = [[null], [null], [null], [null]];
 
         var plotData = []
         for (var i = 0; i < plotting_data.length; i++) {

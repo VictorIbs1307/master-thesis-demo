@@ -3,7 +3,7 @@ export class Kernel {
     sigma2: number
     kernelSize: number
     subtract = false
-    self: Float32Array;
+    self: Float32Array = new Float32Array();
 
     initGauss(sigma: number, sigma2: number, kernelSize: number) {
         this.sigma = sigma;
@@ -24,6 +24,7 @@ export class Kernel {
         var sum = 0.0;
 
         var kernel = new Float32Array(dim - Number(!(dim & 1))); // Make it odd number
+        
         const half = kernel.length / 2;
         for (var j = 0, i = -half; j < kernel.length; i++, j++) {
             kernel[j] = Math.exp(-(i * i) / (s2)) / sqrtSigmaPi2;
@@ -33,7 +34,7 @@ export class Kernel {
         for (var i = 0; i < dim; i++) {
             kernel[i] /= sum;
         }
- 
+        
         this.self = kernel;
     }
 
