@@ -2391,11 +2391,19 @@ var Illustrator = /** @class */function () {
       },
       yaxis: {
         range: [0, 1]
+      },
+      margin: {
+        t: 20,
+        b: 20
       }
     };
     this.plotDefaultFrequencyLayout = {
       yaxis: {
         range: [-10, 256]
+      },
+      margin: {
+        t: 20,
+        b: 20
       }
     };
   }
@@ -2610,6 +2618,8 @@ var sigmaValues2 = document.querySelectorAll('[id=sigma-value2]');
 var timeFiltersAplliedValues = document.querySelectorAll('[id=time-filter-applied-value]');
 var imageRowSliceValue = document.querySelector('#image-row-slice-value');
 var saveButton = document.querySelector('#save');
+var colorOptionMenuTabButtons = document.querySelectorAll('[id=colorOptionMenuTab]');
+var colorOptionMenus = document.querySelectorAll('[id=colorOptionMenu]');
 var filter = new filter_1.Filter();
 var illustrator = new illustrations_1.Illustrator();
 // #endregion
@@ -2620,7 +2630,11 @@ function init() {
   });
   var _loop_1 = function _loop_1(i) {
     kernelSizes[i].addEventListener('input', function () {
-      kernalSizesValues[i].value = kernelSizes[i].value;
+      if (kernelSizes[i].value === "0") {
+        kernalSizesValues[i].value = "auto";
+      } else {
+        kernalSizesValues[i].value = kernelSizes[i].value;
+      }
       update();
     }, false);
   };
@@ -2640,7 +2654,11 @@ function init() {
   ;
   var _loop_3 = function _loop_3(i) {
     sigmas2[i].addEventListener('input', function () {
-      sigmaValues2[i].value = sigmas2[i].value;
+      if (sigmas2[i].value === "0") {
+        sigmaValues2[i].value = "auto";
+      } else {
+        sigmaValues2[i].value = sigmas2[i].value;
+      }
       update();
     }, false);
   };
@@ -2684,6 +2702,23 @@ function init() {
       downloadLink.setAttribute('href', dataURL);
       downloadLink.click();
     }
+  });
+  var buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
+  colorOptionMenuTabButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      // Turn all non-clicked buttons grey
+      colorOptionMenuTabButtons.forEach(function (otherButton, i) {
+        var _a;
+        (_a = otherButton.classList).remove.apply(_a, buttonColorClasses);
+        if (otherButton !== button) {
+          otherButton.classList.add(buttonColorClasses[3]);
+          colorOptionMenus[i].style.display = "none";
+        } else {
+          otherButton.classList.add(buttonColorClasses[i]);
+          colorOptionMenus[i].style.display = "flex";
+        }
+      });
+    });
   });
   illustrator.initKernelGraph();
   illustrator.initFrequencyGraph();
@@ -2777,7 +2812,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52048" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54875" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

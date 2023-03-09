@@ -554,10 +554,6 @@ input[type="range"] {
   margin-top: 2.5rem;
 }
 
-.mt-4 {
-  margin-top: 1rem;
-}
-
 .mt-8 {
   margin-top: 2rem;
 }
@@ -566,62 +562,40 @@ input[type="range"] {
   display: flex;
 }
 
-.grid {
-  display: grid;
+.hidden {
+  display: none;
 }
 
 .h-14 {
   height: 3.5rem;
 }
 
-.w-1\/2 {
-  width: 50%;
-}
-
 .w-1\/6 {
   width: 16.666667%;
-}
-
-.w-10\/12 {
-  width: 83.333333%;
 }
 
 .w-11\/12 {
   width: 91.666667%;
 }
 
-.w-3\/4 {
-  width: 75%;
-}
-
-.w-5\/12 {
-  width: 41.666667%;
-}
-
 .w-full {
   width: 100%;
 }
 
-.w-min {
-  width: -moz-min-content;
-  width: min-content;
+.w-2\/6 {
+  width: 33.333333%;
 }
 
-.min-w-min {
-  min-width: -moz-min-content;
-  min-width: min-content;
-}
-
-.grid-cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.flex-row {
+  flex-direction: row;
 }
 
 .flex-col {
   flex-direction: column;
 }
 
-.flex-wrap {
-  flex-wrap: wrap;
+.content-center {
+  align-content: center;
 }
 
 .items-center {
@@ -636,10 +610,12 @@ input[type="range"] {
   justify-content: space-between;
 }
 
-.space-x-4 > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-x-reverse: 0;
-  margin-right: calc(1rem * var(--tw-space-x-reverse));
-  margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+.justify-around {
+  justify-content: space-around;
+}
+
+.self-center {
+  align-self: center;
 }
 
 .rounded-lg {
@@ -686,6 +662,11 @@ input[type="range"] {
 .bg-blue-200 {
   --tw-bg-opacity: 1;
   background-color: rgb(191 219 254 / var(--tw-bg-opacity));
+}
+
+.bg-gray-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
 }
 
 .bg-green-200 {
@@ -762,6 +743,30 @@ input[type="range"] {
   padding-top: 2rem;
 }
 
+.pt-5 {
+  padding-top: 1.25rem;
+}
+
+.pr-5 {
+  padding-right: 1.25rem;
+}
+
+.pl-5 {
+  padding-left: 1.25rem;
+}
+
+.pl-10 {
+  padding-left: 2.5rem;
+}
+
+.pr-2 {
+  padding-right: 0.5rem;
+}
+
+.align-middle {
+  vertical-align: middle;
+}
+
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
@@ -778,6 +783,10 @@ input[type="range"] {
 
 .font-semibold {
   font-weight: 600;
+}
+
+.italic {
+  font-style: italic;
 }
 
 .text-\[\#5599c9\] {
@@ -858,12 +867,6 @@ input[type="range"] {
 .hover\:bg-\[\#2978b1\]:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(41 120 177 / var(--tw-bg-opacity));
-}
-
-@media (min-width: 1536px) {
-  .\32xl\:w-11\/12 {
-    width: 91.666667%;
-  }
 }
 
 
