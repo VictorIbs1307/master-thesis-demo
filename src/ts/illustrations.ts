@@ -22,11 +22,19 @@ export class Illustrator {
 
         this.plotDefaultKernelLayout = {
             xaxis: { range: [0, 1] },
-            yaxis: { range: [0, 1] }
+            yaxis: { range: [0, 1] },
+            margin: {
+                t: 20,
+                b: 20,
+            }
         };
 
         this.plotDefaultFrequencyLayout = {
-            yaxis: { range: [-10, 256] }
+            yaxis: { range: [-10, 256] },
+            margin: {
+                t: 20,
+                b: 20,
+            }
         };
     }
 

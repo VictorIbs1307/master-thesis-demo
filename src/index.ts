@@ -21,6 +21,9 @@ let timeFiltersAplliedValues = document.querySelectorAll<HTMLInputElement>('[id=
 let imageRowSliceValue = document.querySelector<HTMLInputElement>('#image-row-slice-value');
 let saveButton = document.querySelector<HTMLInputElement>('#save');
 
+let colorOptionMenuTabButtons = document.querySelectorAll<HTMLInputElement>('[id=colorOptionMenuTab]');
+let colorOptionMenus = document.querySelectorAll<HTMLElement>('[id=colorOptionMenu]');
+
 let filter = new Filter();
 let illustrator = new Illustrator();
  
@@ -35,7 +38,12 @@ function init() {
 
     for (let i = 0; i < kernelSizes.length; i++) {
         kernelSizes[i].addEventListener('input', function() {
-            kernalSizesValues[i].value = kernelSizes[i].value;
+            if(kernelSizes[i].value === "0"){
+                kernalSizesValues[i].value = "auto";
+            }
+            else {
+                kernalSizesValues[i].value = kernelSizes[i].value;
+            }
             update();
         }, false);
     };
@@ -49,7 +57,12 @@ function init() {
 
     for (let i = 0; i < sigmas2.length; i++) {
         sigmas2[i].addEventListener('input', function() {
-            sigmaValues2[i].value = sigmas2[i].value;
+            if(sigmas2[i].value === "0"){
+                sigmaValues2[i].value = "auto";
+            }
+            else {
+                sigmaValues2[i].value = sigmas2[i].value;
+            }
             update();
         }, false);
     };
@@ -88,6 +101,26 @@ function init() {
             downloadLink.setAttribute('href', dataURL);
             downloadLink.click();
         }
+    });
+
+    const buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
+    colorOptionMenuTabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            
+            // Turn all non-clicked buttons grey
+            colorOptionMenuTabButtons.forEach((otherButton,i) => {
+                otherButton.classList.remove(...buttonColorClasses);
+
+                if (otherButton !== button) {
+                    otherButton.classList.add(buttonColorClasses[3]);
+                    colorOptionMenus[i].style.display = "none";
+                }
+                else {
+                    otherButton.classList.add(buttonColorClasses[i]);
+                    colorOptionMenus[i].style.display = "flex";
+                }
+            });
+        });
     });
 
     illustrator.initKernelGraph();
