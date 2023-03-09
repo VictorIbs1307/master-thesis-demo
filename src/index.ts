@@ -125,7 +125,9 @@ function applyKernel() {
     var context = canvas.getContext('2d');
     var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
 
-    filter.applyToImage(pixels);
+    const timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+
+    filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
     illustrator.generatKernelGraph(filter.kernels);
     illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));
 
