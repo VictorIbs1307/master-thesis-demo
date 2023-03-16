@@ -1,5 +1,5 @@
 export function importFileInit(imageRowSlice: HTMLInputElement) {
-    const input = document.querySelector('input[type=file]') as HTMLInputElement;
+    const input = document.querySelector<HTMLInputElement>('#input-file') as HTMLInputElement;
     input.addEventListener('change', function(evt) {
         const source = (evt.target as HTMLInputElement).files![0];
         const image = new Image();

@@ -5,6 +5,8 @@ import { Illustrator } from "./ts/illustrations";
 // #endregion
 // #region variables
 let resetButton = document.querySelector<HTMLInputElement>('#reset-all');
+const inputConfigFile = document.querySelector<HTMLInputElement>('#input-config-file')
+const inputConfigFileButton = document.getElementById('input-config-file-button');
 
 let kernelSizes = document.querySelectorAll<HTMLInputElement>('[id=kernal-size]');
 let sigmas = document.querySelectorAll<HTMLInputElement>('[id=sigma]');
@@ -28,13 +30,43 @@ let colorOptionMenus = document.querySelectorAll<HTMLElement>('[id=colorOptionMe
 let filter = new Filter();
 let illustrator = new Illustrator();
  
-// #endregion
-
 function init() {
     importFileInit(imageRowSlice!);
 
     resetButton!.addEventListener("click", function() {
         resetAllOptions();
+        update();
+    });
+
+    inputConfigFileButton!.addEventListener('click', () => { 
+        inputConfigFile!.click();
+    });
+
+    inputConfigFile!.addEventListener('change', () => {
+        const file = inputConfigFile!.files![0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            const fileContent = reader.result as string;
+            try {
+                const jsonObject = JSON.parse(fileContent);
+                jsonObject.settings.forEach((element: any, i: number) => {
+                    filterTypes[i].value = element.filterType;
+                    blurOrSharpenCheckboxs[i].checked = element.blurOrSharpenCheckbox;
+                    kernelSizes[i].value = element.kernelSize;
+                    kernalSizesValues[i].value = element.kernelSize;
+                    sigmas[i].value = element.sigma;
+                    sigmaValues[i].value = element.sigma;
+                    sigmas2[i].value = element.sigma2;
+                    sigmaValues2[i].value = element.sigma2;
+                    timeFiltersApllied[i].value = element.timeFiltersApllied; 
+                    timeFiltersAplliedValues[i].value = element.timeFiltersApllied; 
+                });
+                update();
+            } catch (error) {
+                console.log('Error parsing JSON');
+            }
+        };
+        reader.readAsText(file);
     });
 
     for (let i = 0; i < kernelSizes.length; i++) {
