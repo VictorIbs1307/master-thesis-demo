@@ -20,6 +20,7 @@ let sigmaValues2 = document.querySelectorAll<HTMLInputElement>('[id=sigma-value2
 let timeFiltersAplliedValues = document.querySelectorAll<HTMLInputElement>('[id=time-filter-applied-value]');
 let imageRowSliceValue = document.querySelector<HTMLInputElement>('#image-row-slice-value');
 let saveButton = document.querySelector<HTMLInputElement>('#save');
+let saveConfigButton = document.querySelector<HTMLInputElement>('#saveConfig');
 
 let colorOptionMenuTabButtons = document.querySelectorAll<HTMLInputElement>('[id=colorOptionMenuTab]');
 let colorOptionMenus = document.querySelectorAll<HTMLElement>('[id=colorOptionMenu]');
@@ -101,6 +102,30 @@ function init() {
             downloadLink.setAttribute('href', dataURL);
             downloadLink.click();
         }
+    });
+
+    saveConfigButton!.addEventListener('click', () => {
+        let contentJson = {
+            settings: Array()
+        };
+        colorOptionMenuTabButtons.forEach((element, i) => {
+            contentJson.settings.push({
+                name: element.innerHTML,
+                filterType: filterTypes[i].value,
+                blurOrSharpenCheckbox: blurOrSharpenCheckboxs[i].checked,
+                kernelSize: kernelSizes[i].value,
+                sigma: sigmas[i].value,
+                sigma2: sigmas2[i].value,
+                timeFiltersApllied: timeFiltersApllied[i].value,
+            });
+        });
+        const contentString = JSON.stringify(contentJson);
+        const link = document.createElement("a");
+        const file = new Blob([contentString], { type: 'text/plain' });
+        link.href = URL.createObjectURL(file);
+        link.download = "config.txt";
+        link.click();
+        URL.revokeObjectURL(link.href);
     });
 
     const buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
