@@ -2618,6 +2618,7 @@ var sigmaValues2 = document.querySelectorAll('[id=sigma-value2]');
 var timeFiltersAplliedValues = document.querySelectorAll('[id=time-filter-applied-value]');
 var imageRowSliceValue = document.querySelector('#image-row-slice-value');
 var saveButton = document.querySelector('#save');
+var saveConfigButton = document.querySelector('#saveConfig');
 var colorOptionMenuTabButtons = document.querySelectorAll('[id=colorOptionMenuTab]');
 var colorOptionMenus = document.querySelectorAll('[id=colorOptionMenu]');
 var filter = new filter_1.Filter();
@@ -2702,6 +2703,31 @@ function init() {
       downloadLink.setAttribute('href', dataURL);
       downloadLink.click();
     }
+  });
+  saveConfigButton.addEventListener('click', function () {
+    var contentJson = {
+      settings: Array()
+    };
+    colorOptionMenuTabButtons.forEach(function (element, i) {
+      contentJson.settings.push({
+        name: element.innerHTML,
+        filterType: filterTypes[i].value,
+        blurOrSharpenCheckbox: blurOrSharpenCheckboxs[i].checked,
+        kernelSize: kernelSizes[i].value,
+        sigma: sigmas[i].value,
+        sigma2: sigmas2[i].value,
+        timeFiltersApllied: timeFiltersApllied[i].value
+      });
+    });
+    var contentString = JSON.stringify(contentJson);
+    var link = document.createElement("a");
+    var file = new Blob([contentString], {
+      type: 'text/plain'
+    });
+    link.href = URL.createObjectURL(file);
+    link.download = "config.txt";
+    link.click();
+    URL.revokeObjectURL(link.href);
   });
   var buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
   colorOptionMenuTabButtons.forEach(function (button) {
@@ -2812,7 +2838,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54875" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60044" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
