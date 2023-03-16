@@ -124,7 +124,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 function importFileInit(imageRowSlice) {
-  var input = document.querySelector('input[type=file]');
+  var input = document.querySelector('#input-file');
   input.addEventListener('change', function (evt) {
     var source = evt.target.files[0];
     var image = new Image();
@@ -2605,6 +2605,8 @@ var illustrations_1 = require("./ts/illustrations");
 // #endregion
 // #region variables
 var resetButton = document.querySelector('#reset-all');
+var inputConfigFile = document.querySelector('#input-config-file');
+var inputConfigFileButton = document.getElementById('input-config-file-button');
 var kernelSizes = document.querySelectorAll('[id=kernal-size]');
 var sigmas = document.querySelectorAll('[id=sigma]');
 var sigmas2 = document.querySelectorAll('[id=sigma2]');
@@ -2623,11 +2625,40 @@ var colorOptionMenuTabButtons = document.querySelectorAll('[id=colorOptionMenuTa
 var colorOptionMenus = document.querySelectorAll('[id=colorOptionMenu]');
 var filter = new filter_1.Filter();
 var illustrator = new illustrations_1.Illustrator();
-// #endregion
 function init() {
   importFile_1.importFileInit(imageRowSlice);
   resetButton.addEventListener("click", function () {
     resetAllOptions();
+    update();
+  });
+  inputConfigFileButton.addEventListener('click', function () {
+    inputConfigFile.click();
+  });
+  inputConfigFile.addEventListener('change', function () {
+    var file = inputConfigFile.files[0];
+    var reader = new FileReader();
+    reader.onload = function () {
+      var fileContent = reader.result;
+      try {
+        var jsonObject = JSON.parse(fileContent);
+        jsonObject.settings.forEach(function (element, i) {
+          filterTypes[i].value = element.filterType;
+          blurOrSharpenCheckboxs[i].checked = element.blurOrSharpenCheckbox;
+          kernelSizes[i].value = element.kernelSize;
+          kernalSizesValues[i].value = element.kernelSize;
+          sigmas[i].value = element.sigma;
+          sigmaValues[i].value = element.sigma;
+          sigmas2[i].value = element.sigma2;
+          sigmaValues2[i].value = element.sigma2;
+          timeFiltersApllied[i].value = element.timeFiltersApllied;
+          timeFiltersAplliedValues[i].value = element.timeFiltersApllied;
+        });
+        update();
+      } catch (error) {
+        console.log('Error parsing JSON');
+      }
+    };
+    reader.readAsText(file);
   });
   var _loop_1 = function _loop_1(i) {
     kernelSizes[i].addEventListener('input', function () {
@@ -2838,7 +2869,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60044" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50063" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
