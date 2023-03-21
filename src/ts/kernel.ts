@@ -11,14 +11,13 @@ export class Kernel {
         if (sigma2 == 0)
             this.sigma2 = this.sigma;
 
-        this.kernelSize = kernelSize;
-
         const GAUSSKERN = 6.0;
         var dim = 0;
         if (kernelSize != 0)
             dim = kernelSize;
         else
             dim = Math.max(3.0, GAUSSKERN * this.sigma);
+        this.kernelSize = dim;
         var sqrtSigmaPi2 = Math.sqrt(Math.PI * 2.0) * this.sigma;
         var s2 = 2.0 * this.sigma * this.sigma2;
         var sum = 0.0;

@@ -145,7 +145,7 @@ function init() {
                 name: element.innerHTML,
                 filterType: filterTypes[i].value,
                 blurOrSharpenCheckbox: blurOrSharpenCheckboxs[i].checked,
-                kernelSize: kernelSizes[i].value,
+                kernelSize: filter.kernels[i].kernelSize,
                 sigma: sigmas[i].value,
                 sigma2: sigmas2[i].value,
                 timeFiltersApllied: timeFiltersApllied[i].value,
