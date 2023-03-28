@@ -125,15 +125,29 @@ function init() {
     }, false);
 
     saveButton!.addEventListener('click', () => {
-        const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
+        const canvas = document.getElementById("HiddenCanvas") as HTMLCanvasElement;
+        var context = canvas.getContext('2d');
+        var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
+
+        const timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+        filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
+
+        var canvas2 = document.createElement('canvas');
+        canvas2.width = pixels.width;
+        canvas2.height = pixels.height;
+
+        var context2 = canvas2.getContext('2d');
+        context2!.putImageData(pixels, 0, 0);
+
         const filename = window.prompt('Enter a filename', 'image.png');
         if (filename) {
             const downloadLink = document.createElement('a');
             downloadLink.setAttribute('download', filename);
-            const dataURL = canvas.toDataURL('image/png');
+            const dataURL = canvas2.toDataURL('image/png');
             downloadLink.setAttribute('href', dataURL);
             downloadLink.click();
         }
+
     });
 
     saveConfigButton!.addEventListener('click', () => {

@@ -20,6 +20,16 @@ export function importFileInit(imageRowSlice: HTMLInputElement) {
 function drawFrame(source: HTMLImageElement | HTMLVideoElement) {
     var MAX_WIDTH = 800;
     var MAX_HEIGHT = 800;
+
+    const hiddenCanvas = document.getElementById("HiddenCanvas") as HTMLCanvasElement;
+    const hiddenCanvasContex = hiddenCanvas.getContext("2d");
+    hiddenCanvas.width = source.width;
+    hiddenCanvas.height = source.height;
+    var hRatio = hiddenCanvas.width / source.width    ;
+    var vRatio = hiddenCanvas.height / source.height  ;
+    var ratio  = Math.min ( hRatio, vRatio );
+    hiddenCanvasContex!.drawImage(source, 0,0, source.width, source.height, 0,0,source.width*ratio, source.height*ratio);
+
     var width, height;
     if ('naturalWidth' in source) { // Check if source is an HTMLImageElement
         width = source.naturalWidth;
@@ -53,4 +63,6 @@ function drawFrame(source: HTMLImageElement | HTMLVideoElement) {
     canvas2.width = width
     canvas2.height = height;
     context2!.drawImage(source, 0, 0, width, height);
+
+
 }

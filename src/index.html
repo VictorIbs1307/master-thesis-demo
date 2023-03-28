@@ -10,6 +10,8 @@
 </head>
 
 <body class="bg-zinc-100">
+    <canvas class="hidden" id="HiddenCanvas"></canvas>
+    <canvas class="hidden" id="HiddenCanvasProcessed"></canvas>
     <header class="flex items-center justify-center w-full h-14 bg-[#5599c9] mb-10 shadow-gray-300 shadow-lg text-white font-semibold text-lg">
         Master Thesis - Rendering of screen colors for Protecting Children's Eyesight 2023
     </header>
@@ -25,6 +27,7 @@
                     <div class="flex flex-col">
                         <canvas class="border-2 border-black mb-4" id="Mycanvas" width="550" height="300"></canvas>
                         <canvas class="border-2 border-black " id="ProcessCanvas" width="550" height="300"></canvas>
+
                         <div class="flex justify-between items-center pt-5">
                             <input id="input-file" type="file" accept="image/*,video/*" />
                             <div class="pr-10">
