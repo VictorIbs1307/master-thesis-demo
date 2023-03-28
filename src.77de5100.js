@@ -143,6 +143,14 @@ exports.importFileInit = importFileInit;
 function drawFrame(source) {
   var MAX_WIDTH = 800;
   var MAX_HEIGHT = 800;
+  var hiddenCanvas = document.getElementById("HiddenCanvas");
+  var hiddenCanvasContex = hiddenCanvas.getContext("2d");
+  hiddenCanvas.width = source.width;
+  hiddenCanvas.height = source.height;
+  var hRatio = hiddenCanvas.width / source.width;
+  var vRatio = hiddenCanvas.height / source.height;
+  var ratio = Math.min(hRatio, vRatio);
+  hiddenCanvasContex.drawImage(source, 0, 0, source.width, source.height, 0, 0, source.width * ratio, source.height * ratio);
   var width, height;
   if ('naturalWidth' in source) {
     // Check if source is an HTMLImageElement
@@ -218,10 +226,10 @@ var Kernel = /** @class */function () {
     this.sigma = sigma;
     this.sigma2 = sigma2;
     if (sigma2 == 0) this.sigma2 = this.sigma;
-    this.kernelSize = kernelSize;
     var GAUSSKERN = 6.0;
     var dim = 0;
     if (kernelSize != 0) dim = kernelSize;else dim = Math.max(3.0, GAUSSKERN * this.sigma);
+    this.kernelSize = dim;
     var sqrtSigmaPi2 = Math.sqrt(Math.PI * 2.0) * this.sigma;
     var s2 = 2.0 * this.sigma * this.sigma2;
     var sum = 0.0;
@@ -2725,12 +2733,23 @@ function init() {
     update();
   }, false);
   saveButton.addEventListener('click', function () {
-    var canvas = document.getElementById("Mycanvas");
+    var canvas = document.getElementById("HiddenCanvas");
+    var context = canvas.getContext('2d');
+    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    var timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(function (input) {
+      return parseInt(input.value);
+    });
+    filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
+    var canvas2 = document.createElement('canvas');
+    canvas2.width = pixels.width;
+    canvas2.height = pixels.height;
+    var context2 = canvas2.getContext('2d');
+    context2.putImageData(pixels, 0, 0);
     var filename = window.prompt('Enter a filename', 'image.png');
     if (filename) {
       var downloadLink = document.createElement('a');
       downloadLink.setAttribute('download', filename);
-      var dataURL = canvas.toDataURL('image/png');
+      var dataURL = canvas2.toDataURL('image/png');
       downloadLink.setAttribute('href', dataURL);
       downloadLink.click();
     }
@@ -2744,7 +2763,7 @@ function init() {
         name: element.innerHTML,
         filterType: filterTypes[i].value,
         blurOrSharpenCheckbox: blurOrSharpenCheckboxs[i].checked,
-        kernelSize: kernelSizes[i].value,
+        kernelSize: filter.kernels[i].kernelSize,
         sigma: sigmas[i].value,
         sigma2: sigmas2[i].value,
         timeFiltersApllied: timeFiltersApllied[i].value
@@ -2869,7 +2888,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50063" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52296" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
