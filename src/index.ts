@@ -2,37 +2,36 @@
 import { importFileInit } from "./ts/importFile"
 import { Filter } from "./ts/filter";
 import { Illustrator } from "./ts/illustrations";  
+import { Diotres } from "./ts/Elelements/dioptres";
+import { KernelSettings } from "./ts/Elelements/kernelSettings";
+import { GaussSettings } from "./ts/Elelements/gaussSettings";
+import { FilterSettings } from "./ts/Elelements/filterSettings";
+
 // #endregion
 // #region variables
 let resetButton = document.querySelector<HTMLInputElement>('#reset-all');
 const inputConfigFile = document.querySelector<HTMLInputElement>('#input-config-file')
 const inputConfigFileButton = document.getElementById('input-config-file-button');
 
-let kernelSizes = document.querySelectorAll<HTMLInputElement>('[id=kernal-size]');
-let sigmas = document.querySelectorAll<HTMLInputElement>('[id=sigma]');
-let sigmas2 = document.querySelectorAll<HTMLInputElement>('[id=sigma2]');
-let timeFiltersApllied = document.querySelectorAll<HTMLInputElement>('[id=time-filter-applied]');
-let filterTypes = document.querySelectorAll<HTMLInputElement>('[id=filterType]');
 let imageRowSlice = document.querySelector<HTMLInputElement>('#image-row-slice');
-let blurOrSharpenCheckboxs = document.querySelectorAll<HTMLInputElement>('[id=blurOrSharpenCheckbox]');
-
-let kernalSizesValues = document.querySelectorAll<HTMLInputElement>('[id=kernal-size-value]');
-let sigmaValues = document.querySelectorAll<HTMLInputElement>('[id=sigma-value]');
-let sigmaValues2 = document.querySelectorAll<HTMLInputElement>('[id=sigma-value2]');
-let timeFiltersAplliedValues = document.querySelectorAll<HTMLInputElement>('[id=time-filter-applied-value]');
 let imageRowSliceValue = document.querySelector<HTMLInputElement>('#image-row-slice-value');
 let saveButton = document.querySelector<HTMLInputElement>('#save');
 let saveConfigButton = document.querySelector<HTMLInputElement>('#saveConfig');
 
-let colorOptionMenuTabButtons = document.querySelectorAll<HTMLInputElement>('[id=colorOptionMenuTab]');
-let colorOptionMenus = document.querySelectorAll<HTMLElement>('[id=colorOptionMenu]');
+
 
 let filter = new Filter();
 let illustrator = new Illustrator();
- 
+
+let kernelSettings = new KernelSettings(update);
+let gaussSettings = new GaussSettings(update);
+let filterSettings = new FilterSettings(update);
+let diotres = new Diotres(update);
+
 function init() {
     importFileInit(imageRowSlice!);
-
+    
+    
     resetButton!.addEventListener("click", function() {
         resetAllOptions();
         update();
@@ -42,8 +41,10 @@ function init() {
         inputConfigFile!.click();
     });
 
-    inputConfigFile!.addEventListener('change', () => {
+    inputConfigFile!.addEventListener('input', () => {
+         console.log('File input changed');
         const file = inputConfigFile!.files![0];
+        
         const reader = new FileReader();
         reader.onload = () => {
             const fileContent = reader.result as string;
@@ -52,12 +53,9 @@ function init() {
                 jsonObject.settings.forEach((element: any, i: number) => {
                     filterTypes[i].value = element.filterType;
                     blurOrSharpenCheckboxs[i].checked = element.blurOrSharpenCheckbox;
-                    kernelSizes[i].value = element.kernelSize;
-                    kernalSizesValues[i].value = element.kernelSize;
-                    sigmas[i].value = element.sigma;
-                    sigmaValues[i].value = element.sigma;
-                    sigmas2[i].value = element.sigma2;
-                    sigmaValues2[i].value = element.sigma2;
+                    kernelSettings.updateValue(i, element.kernelSize);
+                    gaussSettings.updateSigmaValue(i, element.sigma);
+                    gaussSettings.updateSigma2Value(i, element.sigma2);
                     timeFiltersApllied[i].value = element.timeFiltersApllied; 
                     timeFiltersAplliedValues[i].value = element.timeFiltersApllied; 
                 });
@@ -67,57 +65,10 @@ function init() {
             }
         };
         reader.readAsText(file);
+        inputConfigFile!.value = "";
     });
 
-    for (let i = 0; i < kernelSizes.length; i++) {
-        kernelSizes[i].addEventListener('input', function() {
-            if(kernelSizes[i].value === "0"){
-                kernalSizesValues[i].value = "auto";
-            }
-            else {
-                kernalSizesValues[i].value = kernelSizes[i].value;
-            }
-            update();
-        }, false);
-    };
-
-    for (let i = 0; i < sigmas.length; i++) {
-        sigmas[i].addEventListener('input', function() {
-            sigmaValues[i].value = sigmas[i].value;
-            update();
-        }, false);
-    };
-
-    for (let i = 0; i < sigmas2.length; i++) {
-        sigmas2[i].addEventListener('input', function() {
-            if(sigmas2[i].value === "0"){
-                sigmaValues2[i].value = "auto";
-            }
-            else {
-                sigmaValues2[i].value = sigmas2[i].value;
-            }
-            update();
-        }, false);
-    };
-
-    for (let i = 0; i < timeFiltersApllied.length; i++) {
-        timeFiltersApllied[i].addEventListener('input', function() {
-            timeFiltersAplliedValues[i].value = timeFiltersApllied[i].value;
-            update();
-        }, false);
-    };
-
-    for (let i = 0; i < filterTypes.length; i++) {
-        filterTypes[i].addEventListener("change", () => {
-            update();
-        });
-    };
-
-    for (let i = 0; i < blurOrSharpenCheckboxs.length; i++) {
-        blurOrSharpenCheckboxs[i].addEventListener("change", () => {
-            update();
-        });
-    };
+    
 
     imageRowSlice!.addEventListener('input', function() {
         imageRowSliceValue!.value = imageRowSlice!.value;
@@ -129,7 +80,7 @@ function init() {
         var context = canvas.getContext('2d');
         var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
 
-        const timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+        const timeFiltersAplliedValuesArray = filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
         filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
 
         var canvas2 = document.createElement('canvas');
@@ -154,15 +105,15 @@ function init() {
         let contentJson = {
             settings: Array()
         };
-        colorOptionMenuTabButtons.forEach((element, i) => {
+        filterSettings.colorOptionMenuTabButtons.forEach((element, i) => {
             contentJson.settings.push({
                 name: element.innerHTML,
-                filterType: filterTypes[i].value,
-                blurOrSharpenCheckbox: blurOrSharpenCheckboxs[i].checked,
+                filterType: filterSettings.filterTypeValues[i],//filterTypes[i].value,
+                blurOrSharpenCheckbox: filterSettings.blurOrSharpenCheckboxValues[i],//blurOrSharpenCheckboxs[i].checked,
                 kernelSize: filter.kernels[i].kernelSize,
-                sigma: sigmas[i].value,
-                sigma2: sigmas2[i].value,
-                timeFiltersApllied: timeFiltersApllied[i].value,
+                sigma: gaussSettings.sigmaValues[i],
+                sigma2: gaussSettings.sigma2Values[i],
+                timeFiltersApllied: filterSettings.filterTypeValues[i], //timeFiltersApllied[i].value,
             });
         });
         const contentString = JSON.stringify(contentJson);
@@ -172,26 +123,6 @@ function init() {
         link.download = "config.txt";
         link.click();
         URL.revokeObjectURL(link.href);
-    });
-
-    const buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
-    colorOptionMenuTabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            
-            // Turn all non-clicked buttons grey
-            colorOptionMenuTabButtons.forEach((otherButton,i) => {
-                otherButton.classList.remove(...buttonColorClasses);
-
-                if (otherButton !== button) {
-                    otherButton.classList.add(buttonColorClasses[3]);
-                    colorOptionMenus[i].style.display = "none";
-                }
-                else {
-                    otherButton.classList.add(buttonColorClasses[i]);
-                    colorOptionMenus[i].style.display = "flex";
-                }
-            });
-        });
     });
 
     illustrator.initKernelGraph();
@@ -206,14 +137,17 @@ function update() {
 
 function createKernels(){
     filter.kernels.forEach((kernel, i: number) => {
-        kernel.subtract = blurOrSharpenCheckboxs[i].checked;
+        kernel.subtract = filterSettings.blurOrSharpenCheckboxValues[i];
         
-        switch (filterTypes[i].value) {
+        switch (filterSettings.filterTypeValues[i]) {
             case "gauss":
-                kernel.initGauss(parseFloat(sigmas[i].value), parseFloat(sigmas2[i].value), parseFloat(kernelSizes[i].value));
+                kernel.initGauss(gaussSettings.sigmaValues[i], gaussSettings.sigma2Values[i], kernelSettings.values[i]);
                 break;
             case "boxBlur":
-                kernel.initBoxKernel(parseFloat(kernelSizes[i].value));
+                kernel.initBoxKernel(kernelSettings.values[i]);
+                break;  
+            case "cylinderBlur":
+                kernel.createCircularKernel(kernelSettings.values[i], kernelSettings.values[i]);
                 break;
             default:
                 console.log("Invalid filter type");
@@ -229,7 +163,7 @@ function applyKernel() {
     var context = canvas.getContext('2d');
     var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
 
-    const timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+    const timeFiltersAplliedValuesArray =  filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
 
     filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
     illustrator.generatKernelGraph(filter.kernels);
@@ -242,20 +176,10 @@ function applyKernel() {
 }
 
 function resetAllOptions() {
-    for (let i = 0; i < kernelSizes.length; i++) {
-        kernalSizesValues[i].value = "0";
-        kernelSizes[i].value = "0";
-    };
-
-    for (let i = 0; i < sigmas.length; i++) {
-        sigmaValues[i].value = "0";
-        sigmas[i].value = "0";
-    };
-
-    for (let i = 0; i < timeFiltersApllied.length; i++) {
-        timeFiltersAplliedValues[i].value = "0";
-        timeFiltersApllied[i].value = "0";
-    };
+    kernelSettings.reset();
+    gaussSettings.reset()
+    filterSettings.reset();
+    
     imageRowSliceValue!.value = "0";
     imageRowSlice!.value = "0";
 

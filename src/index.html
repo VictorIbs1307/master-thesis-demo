@@ -32,7 +32,7 @@
                             <input id="input-file" type="file" accept="image/*,video/*" />
                             <div class="pr-10">
                                 <button class="border-2 border-black" style="cursor:pointer" id="input-config-file-button">Import config file</button>
-                                <input id="input-config-file" type="file" accept="text/plain" style="display:none">
+                                <input id="input-config-file" type="file" accept="text/plain">
                             </div>
                             <div class="flex justify-between items-center">
                                 <label class="pr-2" for="image-row-slice">Image row slice: <output id="image-row-slice-value">0</output></label><br>
@@ -47,73 +47,112 @@
                                 <!-- Plotly chart will be drawn inside this DIV -->
                             </div>
                         </div>
-                        <div class="flex justify-center">
-                            <button id="colorOptionMenuTab" class="bg-red-200 rounded-lg py-0.5 px-4 outline-none">Red</button>
-                            <button id="colorOptionMenuTab" class="bg-gray-300  rounded-lg py-0.5 px-4 outline-none">Green</button>
-                            <button id="colorOptionMenuTab" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Blue</button>
+                        <div class="hidden">
+                            <div class="flex justify-center">
+                                <button id="" class="bg-red-200 rounded-lg py-0.5 px-4 outline-none">Red</button>
+                                <button id="" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Green</button>
+                                <button id="" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Blue</button>
+                            </div>
+                            <div id="colorOptionMenu" class="flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
+                                <div class="flex justify-between border-b-4 border-red-400 pb-2">
+                                    <h2><span class="text-red-600 font-semibold">Red</span> defoucs image with x dioptre</h2>
+                                </div>
+                                <div class="pt-2">
+                                    <input class="accent-red-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="15" value="0">
+                                    <label for="dipotre-slider">Dioptre: <output  class="italic"id="dipotre-slider-value">0</output></label><br>
+                                </div>
+                            </div>
+                            <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
+                                <div class="flex justify-between border-b-4 border-green-400 pb-2">
+                                    <h2><span class="text-green-600 font-semibold">Green</span> defoucs image with x dioptre</h2>
+                                </div>
+                                <div class="pt-2">
+                                    <input class="accent-green-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="15" value="0">
+                                    <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
+                                </div>
+                            </div>
+                            <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
+                                <div class="flex justify-between border-b-4 border-blue-400 pb-2">
+                                    <h2><span class="text-blue-600 font-semibold">Blue</span> defoucs image with x dioptre</h2>
+                                </div>
+                                <div class="pt-2">
+                                    <input class="accent-blue-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="15" value="0">
+                                    <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
+                                </div>
+                            </div>
                         </div>
-                        <div id="colorOptionMenu" class="flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
-                            <div class="flex justify-between border-b-4 border-red-400 pb-2">
-                                <h2><span class="text-red-600 font-semibold">Red</span> color channel options</h2>
-                                <select class="bg-red-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
-                                    <option value="gauss">Gauss</option>
-                                    <option value="boxBlur">Box Blur</option>
-                                </select>
+                        <div>
+                            <div class="flex justify-center">
+                                <button id="colorOptionMenuTab" class="bg-red-200 rounded-lg py-0.5 px-4 outline-none">Red</button>
+                                <button id="colorOptionMenuTab" class="bg-gray-300  rounded-lg py-0.5 px-4 outline-none">Green</button>
+                                <button id="colorOptionMenuTab" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Blue</button>
+                            </div>
+                            <div id="colorOptionMenu" class="flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
+                                <div class="flex justify-between border-b-4 border-red-400 pb-2">
+                                    <h2><span class="text-red-600 font-semibold">Red</span> color channel options</h2>
+                                    <select class="bg-red-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
+                                        <option value="gauss">Gauss Blur</option>
+                                        <option value="boxBlur">Box Blur</option>
+                                        <option value="cylinderBlur">Cylinder Blur</option>
+                                    </select>
 
+                                </div>
+                                <div class="pt-2">
+                                    <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
+                                    <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
+                                    <input class="accent-red-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
+                                    <label for="kernal-size">Kernal size: <output  class="italic"id="kernal-size-value">auto</output></label><br>
+                                    <input class="accent-red-400 bg-zinc-200" id="sigma" type="range" min="0" max="10" value="0" step="0.1">
+                                    <label for="sigma">Sigma value: <output class="italic" id="sigma-value">0</output></label><br>
+                                    <input class="accent-red-400 bg-zinc-200" id="sigma2" type="range" min="0" max="10" value="0" step="0.1">
+                                    <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
+                                    <input class="accent-red-400 bg-zinc-200" id="time-filter-applied" type="range" min="1" max="10" value="0">
+                                    <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label><br>
+                                </div>
                             </div>
-                            <div class="pt-2">
-                                <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
-                                <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
-                                <input class="accent-red-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
-                                <label for="kernal-size">Kernal size: <output  class="italic"id="kernal-size-value">auto</output></label><br>
-                                <input class="accent-red-400 bg-zinc-200" id="sigma" type="range" min="0" max="10" value="0" step="0.1">
-                                <label for="sigma">Sigma value: <output class="italic" id="sigma-value">0</output></label><br>
-                                <input class="accent-red-400 bg-zinc-200" id="sigma2" type="range" min="0" max="10" value="0" step="0.1">
-                                <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
-                                <input class="accent-red-400 bg-zinc-200" id="time-filter-applied" type="range" min="1" max="10" value="0">
-                                <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label><br>
+                            <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
+                                <div class="flex justify-between border-b-4 border-green-400 pb-2">
+                                    <h2><span class="text-green-600 font-semibold">Green</span> color channel options</h2>
+                                    <select class="bg-green-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
+                                        <option value="gauss">Gauss</option>
+                                        <option value="boxBlur">Box Blur</option>
+                                        <option value="cylinderBlur">Cylinder Blur</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2">
+                                    <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
+                                    <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
+                                    <input class="accent-green-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
+                                    <label for="kernal-size">Kernal size: <output class="italic" id="kernal-size-value">auto</output></label><br>
+                                    <input class="accent-green-400 bg-zinc-200" id="sigma" type="range" min="0" max="10" value="0" step="0.1">
+                                    <label for="sigma">Sigma value: <output class="italic" id="sigma-value">0</output></label><br>
+                                    <input class="accent-green-400 bg-zinc-200" id="sigma2" type="range" min="0" max="10" value="0" step="0.1">
+                                    <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
+                                    <input class="accent-green-400 bg-zinc-200" class="accent-red-600" id="time-filter-applied" type="range" min="1" max="10" value="0">
+                                    <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label>
+                                </div>
                             </div>
-                        </div>
-                        <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
-                            <div class="flex justify-between border-b-4 border-green-400 pb-2">
-                                <h2><span class="text-green-600 font-semibold">Green</span> color channel options</h2>
-                                <select class="bg-green-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
-                                    <option value="gauss">Gauss</option>
-                                    <option value="boxBlur">Box Blur</option>
-                                </select>
-                            </div>
-                            <div class="pt-2">
-                                <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
-                                <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
-                                <input class="accent-green-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
-                                <label for="kernal-size">Kernal size: <output class="italic" id="kernal-size-value">auto</output></label><br>
-                                <input class="accent-green-400 bg-zinc-200" id="sigma" type="range" min="0" max="10" value="0" step="0.1">
-                                <label for="sigma">Sigma value: <output class="italic" id="sigma-value">0</output></label><br>
-                                <input class="accent-green-400 bg-zinc-200" id="sigma2" type="range" min="0" max="10" value="0" step="0.1">
-                                <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
-                                <input class="accent-green-400 bg-zinc-200" class="accent-red-600" id="time-filter-applied" type="range" min="1" max="10" value="0">
-                                <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label>
-                            </div>
-                        </div>
-                        <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
-                            <div class="flex justify-between border-b-4 border-blue-400 pb-2">
-                                <h2><span class="text-blue-600 font-semibold">Blue</span> color channel options</h2>
-                                <select class="bg-blue-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
-                                    <option value="gauss">Gauss</option>
-                                    <option value="boxBlur">Box Blur</option>
-                                </select>
-                            </div>
-                            <div class="pt-2">
-                                <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
-                                <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
-                                <input class="accent-blue-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
-                                <label for="kernal-size">Kernal size: <output class="italic" id="kernal-size-value">auto</output></label><br>
-                                <input class="accent-blue-400 bg-zinc-200" id="sigma" type="range" min="0" max="10" value="0" step="0.1">
-                                <label for="sigma">Sigma value: <output class="italic" id="sigma-value">0</output></label><br>
-                                <input class="accent-blue-400 bg-zinc-200" id="sigma2" type="range" min="0" max="10" value="0" step="0.1">
-                                <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
-                                <input class="accent-blue-400 bg-zinc-200" id="time-filter-applied" type="range" min="1" max="10" value="0">
-                                <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label>
+                            <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
+                                <div class="flex justify-between border-b-4 border-blue-400 pb-2">
+                                    <h2><span class="text-blue-600 font-semibold">Blue</span> color channel options</h2>
+                                    <select class="bg-blue-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
+                                        <option value="gauss">Gauss</option>
+                                        <option value="boxBlur">Box Blur</option>
+                                        <option value="cylinderBlur">Cylinder Blur</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2">
+                                    <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
+                                    <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
+                                    <input class="accent-blue-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
+                                    <label for="kernal-size">Kernal size: <output class="italic" id="kernal-size-value">auto</output></label><br>
+                                    <input class="accent-blue-400 bg-zinc-200" id="sigma" type="range" min="0" max="10" value="0" step="0.1">
+                                    <label for="sigma">Sigma value: <output class="italic" id="sigma-value">0</output></label><br>
+                                    <input class="accent-blue-400 bg-zinc-200" id="sigma2" type="range" min="0" max="10" value="0" step="0.1">
+                                    <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
+                                    <input class="accent-blue-400 bg-zinc-200" id="time-filter-applied" type="range" min="1" max="10" value="0">
+                                    <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label>
+                                </div>
                             </div>
                         </div>
                         <div class="flex justify-around items-center pt-5">

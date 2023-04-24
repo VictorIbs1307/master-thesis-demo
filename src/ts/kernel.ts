@@ -2,7 +2,7 @@ export class Kernel {
     sigma: number = 0
     sigma2: number = 0
     kernelSize: number = 0
-    subtract = false
+    subtract: boolean = false
     self: Float32Array = new Float32Array();
 
     initGauss(sigma: number, sigma2: number, kernelSize: number) {
@@ -64,27 +64,28 @@ export class Kernel {
         this.self = kernel;
     }
 
-/*     printMatrix() {
-        var k = [];
-        for (var i = 0; i < this.self.length; i++) {
-            k.push(kernel[i] / kernel[0]);
-        }
+    createCircularKernel(kernelSize: number, radius: number) {
+        this.sigma = 1;
+        const center = (kernelSize - 1) / 2;
+        const kernel = new Float32Array(kernelSize);
 
-        var k_t = []
-        for (var i = 0; i < k.length; i++) {
-            k_t.push([k[i]])
-        };
-
-        var k_m = multiply(k_t, [k]);
-
-        var k_m_sum = k_m.reduce(function(a, b) { return a.concat(b) })
-            .reduce(function(a, b) { return a + b });
-
-        for (var row = 0; row < k_m.length; row++) {
-            for (var col = 0; col < k_m[0].length; col++) {
-                k_m[row][col] = k_m[row][col] / k_m_sum;
+        let sum = 0;
+        for (let i = 0; i < kernelSize; i++) {
+            const distance = Math.abs(i - center);
+            if (distance <= radius) {
+            const value = 1 - distance / radius;
+            kernel[i] = value;
+            sum += value;
+            } else {
+            kernel[i] = 0;
             }
         }
-        console.log(k_m)
-    } */
+
+        // Normalize the kernel
+        for (let i = 0; i < kernelSize; i++) {
+            kernel[i] /= sum;
+        }
+
+        this.self = kernel;
+    } 
 }
