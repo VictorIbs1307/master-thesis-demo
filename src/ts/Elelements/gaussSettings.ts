@@ -49,7 +49,6 @@ export class GaussSettings {
 
                 this._sigmaValues[i] = parseFloat(sliderValue); 
                 this._sigmaSliderLabels[i].value = sliderValue;
-
                 callback();
             }, false);
         };

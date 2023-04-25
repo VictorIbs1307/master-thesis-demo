@@ -10,7 +10,7 @@ export class FilterSettings {
     private _filterTypeValues: string[];
     private _blurOrSharpenCheckboxValues: boolean[];
 
-    private _resetSliderValue: string = "0";
+    private _resetSliderValue: string = "1";
     private _resetCheckboxValue: boolean = false;
 
 //#region get & set

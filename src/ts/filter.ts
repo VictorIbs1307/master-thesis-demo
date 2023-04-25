@@ -27,7 +27,7 @@ export class Filter {
                 // First step process columns
                 for (var j = 0, hw = 0; j < h; j++, hw += w) {
                     for (var i = 0; i < w; i++) {
-                        var sum = 0;
+                        var sum = 0;    
                         for (var k = 0; k < kl; k++) {
                             var col = i + (k - mk);
                             col = (col < 0) ? 0 : ((col >= w) ? w - 1 : col);

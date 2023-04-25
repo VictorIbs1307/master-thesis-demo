@@ -4,6 +4,7 @@ export class Kernel {
     kernelSize: number = 0
     subtract: boolean = false
     self: Float32Array = new Float32Array();
+    test: number[][] = new Array(0);
 
     initGauss(sigma: number, sigma2: number, kernelSize: number) {
         this.sigma = sigma;
@@ -64,28 +65,56 @@ export class Kernel {
         this.self = kernel;
     }
 
-    createCircularKernel(kernelSize: number, radius: number) {
-        this.sigma = 1;
-        const center = (kernelSize - 1) / 2;
-        const kernel = new Float32Array(kernelSize);
+    createCircularKernel(kernelSize: number) {
+        // test code:
+        if(kernelSize == -1){
+            kernelSize = 0;
+        }
+        this.kernelSize = kernelSize;
+            
+        var width = (kernelSize -1 ) / 2;
+        var dim = (width * 2) + 1;
+        var array = new Array(dim);
+        for(let row = 0; row < dim; row++)
+            array[row] = new Array(dim);
+        
+        this.makeCircle(width, width, width, array, dim, dim);  
+        this.test = array; 
+    }
 
-        let sum = 0;
-        for (let i = 0; i < kernelSize; i++) {
-            const distance = Math.abs(i - center);
-            if (distance <= radius) {
-            const value = 1 - distance / radius;
-            kernel[i] = value;
-            sum += value;
-            } else {
-            kernel[i] = 0;
+        makeCircle(centerX: number, centerY: number, radius: number, a: number[][], arrayWidth: number, arrayHeight: number)
+        {
+            var x, y, d, yDiff, threshold, radiusSq;
+            radius = (radius * 2);// + 1;
+            radiusSq = (radius * radius) / 4;
+            let sum = 0;
+            for(y = 0; y < arrayHeight; y++)
+            {
+                yDiff = y - centerY;
+                threshold = radiusSq - (yDiff * yDiff);
+                for(x = 0; x < arrayWidth; x++)
+                {
+                    d = x - centerX;
+                    if((d * d) > threshold){
+                        a[y][x] = 0;
+                    }
+                    else {
+                        a[y][x] = 1;
+                        sum += 1;
+                    }
+                }
+            }
+
+            sum = 1/sum;
+            for(y = 0; y < arrayHeight; y++)
+            {
+                for(x = 0; x < arrayWidth; x++)
+                {
+                    if(a[y][x] == 1){
+                        a[y][x] = sum;
+                    }
+                }
             }
         }
-
-        // Normalize the kernel
-        for (let i = 0; i < kernelSize; i++) {
-            kernel[i] /= sum;
-        }
-
-        this.self = kernel;
-    } 
+  
 }

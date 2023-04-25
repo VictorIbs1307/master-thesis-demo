@@ -2,10 +2,12 @@
 import { importFileInit } from "./ts/importFile"
 import { Filter } from "./ts/filter";
 import { Illustrator } from "./ts/illustrations";  
-import { Diotres } from "./ts/Elelements/dioptres";
+import { DiotresSettings } from "./ts/Elelements/dioptres";
 import { KernelSettings } from "./ts/Elelements/kernelSettings";
 import { GaussSettings } from "./ts/Elelements/gaussSettings";
 import { FilterSettings } from "./ts/Elelements/filterSettings";
+import { CanvasManager } from "./ts/Elelements/canvasManager";
+import { FilterDioptre } from "./ts/filterDioptre";
 
 // #endregion
 // #region variables
@@ -21,17 +23,49 @@ let saveConfigButton = document.querySelector<HTMLInputElement>('#saveConfig');
 
 
 let filter = new Filter();
+let filterDioptre = new FilterDioptre();
 let illustrator = new Illustrator();
 
 let kernelSettings = new KernelSettings(update);
 let gaussSettings = new GaussSettings(update);
 let filterSettings = new FilterSettings(update);
-let diotres = new Diotres(update);
+let diotresSettings = new DiotresSettings(update);
+
+let canvasManager = new CanvasManager();
+
+let isPlayground = false;
 
 function init() {
     importFileInit(imageRowSlice!);
     
-    
+    const menuOptionTabs = document.querySelectorAll<HTMLInputElement>('[id=menuOptionTab]');
+    const dioptreMenu = document.getElementById("dioptreMenu") as HTMLInputElement;
+    const playgroundMenu = document.getElementById("playgroundMenu") as HTMLInputElement;
+
+    const buttonColorClasses = ["bg-red-200", "bg-gray-300"];
+
+    menuOptionTabs[0].addEventListener('click', () => {
+        dioptreMenu.style.display = "flex"
+        playgroundMenu.style.display = "none"
+        isPlayground = false;
+        menuOptionTabs[0].classList.remove(buttonColorClasses[1]);
+        menuOptionTabs[0].classList.add(buttonColorClasses[0])
+        menuOptionTabs[1].classList.remove(buttonColorClasses[0]);
+        menuOptionTabs[1].classList.add(buttonColorClasses[1]);
+    });
+
+    menuOptionTabs[1].addEventListener('click', () => {
+        dioptreMenu.style.display = "none"
+        playgroundMenu.style.display = "flex"
+        isPlayground = true;
+        menuOptionTabs[0].classList.remove(buttonColorClasses[0]);
+        menuOptionTabs[0].classList.add(buttonColorClasses[1])
+        menuOptionTabs[1].classList.remove(buttonColorClasses[1]);
+        menuOptionTabs[1].classList.add(buttonColorClasses[0]);
+    });
+        
+
+
     resetButton!.addEventListener("click", function() {
         resetAllOptions();
         update();
@@ -75,25 +109,18 @@ function init() {
     }, false);
 
     saveButton!.addEventListener('click', () => {
-        const canvas = document.getElementById("HiddenCanvas") as HTMLCanvasElement;
-        var context = canvas.getContext('2d');
-        var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
+        var pixels = canvasManager.getHiddenImageData();
 
         const timeFiltersAplliedValuesArray = filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
         filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
 
-        var canvas2 = document.createElement('canvas');
-        canvas2.width = pixels.width;
-        canvas2.height = pixels.height;
-
-        var context2 = canvas2.getContext('2d');
-        context2!.putImageData(pixels, 0, 0);
+        var newCanvas = canvasManager.createNewCanvas(pixels);
 
         const filename = window.prompt('Enter a filename', 'image.png');
         if (filename) {
             const downloadLink = document.createElement('a');
             downloadLink.setAttribute('download', filename);
-            const dataURL = canvas2.toDataURL('image/png');
+            const dataURL = newCanvas.toDataURL('image/png');
             downloadLink.setAttribute('href', dataURL);
             downloadLink.click();
         }
@@ -128,8 +155,28 @@ function init() {
     illustrator.initFrequencyGraph();  
 }
 
+function diotreTester(){
+    
+    filterDioptre.kernels.forEach((kernel, i) => {
+        const kernelSize = diotresSettings.calculateKernelSize(i); 
+        kernel.createCircularKernel(kernelSize); 
+    });
+
+    let pixels = canvasManager.getOrginalImageData();
+
+    filterDioptre.applyToImage(pixels);
+
+    illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));
+
+    canvasManager.setProcessCanvasImageData(pixels);
+}
 
 function update() {
+    if(!isPlayground){
+        diotreTester();
+        return
+    }
+
     createKernels();
     applyKernel(); 
 }
@@ -145,9 +192,9 @@ function createKernels(){
             case "boxBlur":
                 kernel.initBoxKernel(kernelSettings.values[i]);
                 break;  
-            case "cylinderBlur":
-                kernel.createCircularKernel(kernelSettings.values[i], kernelSettings.values[i]);
-                break;
+/*             case "cylinderBlur":
+                kernel.createCircularKernel(kernelSettings.values[i]);
+                break; */
             default:
                 console.log("Invalid filter type: " + filterSettings.filterTypeValues[i]);
                 break;
@@ -157,40 +204,27 @@ function createKernels(){
 }
 
 function applyKernel() {
-    // Get data from imported image
-    const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
-    var context = canvas.getContext('2d');
-    var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
+    let pixels = canvasManager.getOrginalImageData();
 
-    const timeFiltersAplliedValuesArray =  filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+    filter.applyToImage(pixels, filterSettings.timeFilterAplliedValues);
 
-    filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
     illustrator.generatKernelGraph(filter.kernels);
     illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));
 
-    // Show the processed image
-    const canvas2 = document.getElementById("ProcessCanvas") as HTMLCanvasElement;
-    var context = canvas2.getContext('2d');
-    context!.putImageData(pixels, 0, 0);
+    canvasManager.setProcessCanvasImageData(pixels);
 }
 
 function resetAllOptions() {
     kernelSettings.reset();
     gaussSettings.reset()
     filterSettings.reset();
-    
+    diotresSettings.reset();
+
     imageRowSliceValue!.value = "0";
     imageRowSlice!.value = "0";
 
-    // Get data from imported image
-    const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
-    var context = canvas.getContext('2d');
-    var pixels = context!.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Show the processed image
-    const canvas2 = document.getElementById("ProcessCanvas") as HTMLCanvasElement;
-    var context = canvas2.getContext('2d');
-    context!.putImageData(pixels, 0, 0);
+    
+    canvasManager.reset(); 
 }
  
 init() 
