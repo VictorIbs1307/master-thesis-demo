@@ -51,13 +51,12 @@ function init() {
             try {
                 const jsonObject = JSON.parse(fileContent);
                 jsonObject.settings.forEach((element: any, i: number) => {
-                    filterTypes[i].value = element.filterType;
-                    blurOrSharpenCheckboxs[i].checked = element.blurOrSharpenCheckbox;
+                    filterSettings.updateFilterTypeValue(i, element.filterType);
+                    filterSettings.updateBlurOrSharpenCheckboxValue(i, element.blurOrSharpenCheckbox);
+                    filterSettings.updateTimesFilterAppliedTypeValue(i, element.timeFiltersApllied); 
                     kernelSettings.updateValue(i, element.kernelSize);
                     gaussSettings.updateSigmaValue(i, element.sigma);
                     gaussSettings.updateSigma2Value(i, element.sigma2);
-                    timeFiltersApllied[i].value = element.timeFiltersApllied; 
-                    timeFiltersAplliedValues[i].value = element.timeFiltersApllied; 
                 });
                 update();
             } catch (error) {
@@ -150,7 +149,7 @@ function createKernels(){
                 kernel.createCircularKernel(kernelSettings.values[i], kernelSettings.values[i]);
                 break;
             default:
-                console.log("Invalid filter type");
+                console.log("Invalid filter type: " + filterSettings.filterTypeValues[i]);
                 break;
         } 
     });

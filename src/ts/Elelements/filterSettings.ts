@@ -49,6 +49,7 @@ export class FilterSettings {
                 this._timeFilterAplliedValues[i] = parseFloat(slider.value); 
                 callback();
             });
+            this._timeFilterAplliedValues[i] = parseFloat(slider.value); 
         });
 
         this._filterTypeDropdownFields.forEach((dropdownField: HTMLInputElement, i: number) => {
@@ -56,6 +57,7 @@ export class FilterSettings {
                 this._filterTypeValues[i] = dropdownField.value;
                 callback();
             });
+            this._filterTypeValues[i] = dropdownField.value;
         });
 
         this._blurOrSharpenCheckboxs.forEach((checkbox: HTMLInputElement, i: number) => {
@@ -63,6 +65,7 @@ export class FilterSettings {
                 this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
                 callback();
             });
+            this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
         });
         
 
@@ -88,15 +91,22 @@ export class FilterSettings {
         });
     }
 
-    // public updateValue(index: number, value: string){
-    //     this._values[index] = parseFloat(value); 
-    //     this._sliders[index].value = value;
-    //     if(value === "0"){
-    //         this._sliderLabels[index].value = "auto";
-    //         return;
-    //     }
-    //     this._sliderLabels[index].value = value
-    // }
+    public updateFilterTypeValue(index: number, value: string){
+        this._filterTypeValues[index] = value; 
+        this._filterTypeDropdownFields[index].value = value;
+    }
+
+    public updateTimesFilterAppliedTypeValue(index: number, value: string){
+        this._timeFilterAplliedValues[index] = parseInt(value); 
+        this._timeFiltersAplliedSlider[index].value = value;
+        this._timeFiltersAplliedLabels[index].value = value;
+    }
+
+    public updateBlurOrSharpenCheckboxValue(index: number, value: string){
+        this._blurOrSharpenCheckboxs[index].checked = (value =="true"); 
+        this._blurOrSharpenCheckboxValues[index] = (value =="true"); 
+    }
+
 
     public reset(){
         for (let i = 0; i < this._timeFiltersAplliedSlider.length; i++) {
