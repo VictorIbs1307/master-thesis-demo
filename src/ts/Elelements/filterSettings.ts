@@ -30,7 +30,7 @@ export class FilterSettings {
     }
 //#endregion
 
-    constructor(callback: () => void) {
+    constructor(callback: (newIsPlayground: boolean) => void) {
         this._timeFiltersAplliedSlider = document.querySelectorAll<HTMLInputElement>('[id=time-filter-applied]');
         this._timeFiltersAplliedLabels = document.querySelectorAll<HTMLInputElement>('[id=time-filter-applied-value]');
         this._filterTypeDropdownFields = document.querySelectorAll<HTMLInputElement>('[id=filterType]');
@@ -47,7 +47,7 @@ export class FilterSettings {
             slider.addEventListener("input", () => {
                 this._timeFiltersAplliedLabels[i].value = slider.value;
                 this._timeFilterAplliedValues[i] = parseFloat(slider.value); 
-                callback();
+                callback(true);
             });
             this._timeFilterAplliedValues[i] = parseFloat(slider.value); 
         });
@@ -55,7 +55,7 @@ export class FilterSettings {
         this._filterTypeDropdownFields.forEach((dropdownField: HTMLInputElement, i: number) => {
             dropdownField.addEventListener("change", () => {
                 this._filterTypeValues[i] = dropdownField.value;
-                callback();
+                callback(true);
             });
             this._filterTypeValues[i] = dropdownField.value;
         });
@@ -63,7 +63,7 @@ export class FilterSettings {
         this._blurOrSharpenCheckboxs.forEach((checkbox: HTMLInputElement, i: number) => {
             checkbox.addEventListener("change", () => {
                 this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
-                callback();
+                callback(true);
             });
             this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
         });

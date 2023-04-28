@@ -33,7 +33,7 @@ export class GaussSettings {
     }
 //#endregion
 
-    constructor(callback: () => void) {
+    constructor(callback: (newIsPlayground: boolean) => void) {
         this._sigmaSliders = document.querySelectorAll<HTMLInputElement>('[id=sigma]');
         this._sigma2Sliders = document.querySelectorAll<HTMLInputElement>('[id=sigma2]');
         this._sigmaSliderLabels = document.querySelectorAll<HTMLInputElement>('[id=sigma-value]');
@@ -49,7 +49,7 @@ export class GaussSettings {
 
                 this._sigmaValues[i] = parseFloat(sliderValue); 
                 this._sigmaSliderLabels[i].value = sliderValue;
-                callback();
+                callback(true);
             }, false);
         };
 
@@ -63,7 +63,7 @@ export class GaussSettings {
                     this._sigma2SliderLabels[i].value = "auto";
                 }
                 
-                callback();
+                callback(true);
             }, false);
         };
     }

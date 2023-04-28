@@ -48,51 +48,15 @@
                             </div>
                         </div>
                         <div id="menuHolder">
-                            <div class="flex justify-around">
-                                <button id="menuOptionTab" class="bg-red-200 rounded-lg py-0.5 px-4 outline-none">Dioptre Menu</button>
-                                <button id="menuOptionTab" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Playground Menu</button>
-                            </div>
-                            <div id="dioptreMenu" class="flex-col">
-                                <input class="bg-zinc-200" type="number" id="PPM" min="0" max="15" value="0">
-                                <label for="number">PPM (Pixels Per Millimeter): </label><br>
-                                <div class="flex justify-center">
-                                    <button id="colorOptionDioptreMenuTab" class="bg-red-200 rounded-lg py-0.5 px-4 outline-none">Red</button>
-                                    <button id="colorOptionDioptreMenuTab" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Green</button>
-                                    <button id="colorOptionDioptreMenuTab" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Blue</button>
-                                </div>
-                                <div id="colorOptionDioptreMenu" class="flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
-                                    <div class="flex justify-between border-b-4 border-red-400 pb-2">
-                                        <h2><span class="text-red-600 font-semibold">Red</span> defoucs image with x dioptre</h2>
-                                    </div>
-                                    <div class="pt-2">
-                                        <input class="accent-red-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="5" value="0" step="0.25">
-                                        <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
-                                    </div>
-                                </div>
-                                <div id="colorOptionDioptreMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
-                                    <div class="flex justify-between border-b-4 border-green-400 pb-2">
-                                        <h2><span class="text-green-600 font-semibold">Green</span> defoucs image with x dioptre</h2>
-                                    </div>
-                                    <div class="pt-2">
-                                        <input class="accent-green-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="5" value="0" step="0.25">
-                                        <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
-                                    </div>
-                                </div>
-                                <div id="colorOptionDioptreMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
-                                    <div class="flex justify-between border-b-4 border-blue-400 pb-2">
-                                        <h2><span class="text-blue-600 font-semibold">Blue</span> defoucs image with x dioptre</h2>
-                                    </div>
-                                    <div class="pt-2">
-                                        <input class="accent-blue-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="5" value="0" step="0.25">
-                                        <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="playgroundMenu" style="display:none" class="flex-col">
+
+
+                            <div id="playgroundMenu" class="flex-col">
                                 <div class="flex justify-center">
                                     <button id="colorOptionMenuTab" class="bg-red-200 rounded-lg py-0.5 px-4 outline-none">Red</button>
                                     <button id="colorOptionMenuTab" class="bg-gray-300  rounded-lg py-0.5 px-4 outline-none">Green</button>
                                     <button id="colorOptionMenuTab" class="bg-gray-300 rounded-lg py-0.5 px-4 outline-none">Blue</button>
+                                    <input class="bg-zinc-200" type="number" id="PPM" min="0" max="15" value="0">
+                                    <label for="number">PPM (Pixels Per Millimeter): </label><br>
                                 </div>
                                 <div id="colorOptionMenu" class="flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
                                     <div class="flex justify-between border-b-4 border-red-400 pb-2">
@@ -102,9 +66,8 @@
                                             <option value="boxBlur">Box Blur</option>
                                             <option value="cylinderBlur">Cylinder Blur</option>
                                         </select>
-
                                     </div>
-                                    <div class="pt-2">
+                                    <div class="pt-2 pb-4">
                                         <input type="checkbox" id="blurOrSharpenCheckbox" name="blurOrSharp">
                                         <label for="vehicle1"> Sharpen image (on) - Blur image (off)</label><br>
                                         <input class="accent-red-400 bg-zinc-200" id="kernal-size" type="range" min="0" max="50" value="0">
@@ -116,12 +79,20 @@
                                         <input class="accent-red-400 bg-zinc-200" id="time-filter-applied" type="range" min="1" max="10" value="0">
                                         <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label><br>
                                     </div>
+                                   
+                                    <div class="flex justify-between border-b-4 border-red-400 pb-2">
+                                        <h2>Defoucs image with x dioptre</h2>
+                                    </div>
+                                    <div class="pt-2">
+                                        <input class="accent-red-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="5" value="0" step="0.25">
+                                        <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
+                                    </div>
                                 </div>
                                 <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
                                     <div class="flex justify-between border-b-4 border-green-400 pb-2">
                                         <h2><span class="text-green-600 font-semibold">Green</span> color channel options</h2>
                                         <select class="bg-green-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
-                                            <option value="gauss">Gauss</option>
+                                            <option value="gauss">Gauss Blur</option>
                                             <option value="boxBlur">Box Blur</option>
                                             <option value="cylinderBlur">Cylinder Blur</option>
                                         </select>
@@ -138,12 +109,20 @@
                                         <input class="accent-green-400 bg-zinc-200" class="accent-red-600" id="time-filter-applied" type="range" min="1" max="10" value="0">
                                         <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label>
                                     </div>
+                                    
+                                    <div class="flex justify-between border-b-4 border-green-400 pb-2">
+                                        <h2>Defoucs image with x dioptre</h2>
+                                    </div>
+                                    <div class="pt-2">
+                                        <input class="accent-green-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="5" value="0" step="0.25">
+                                        <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
+                                    </div>
                                 </div>
                                 <div id="colorOptionMenu" class="hidden flex flex-col pb-20 items-center mx-auto w-11/12 bg-white p-8 rounded-xl shadow-gray-300 shadow-lg ">
                                     <div class="flex justify-between border-b-4 border-blue-400 pb-2">
                                         <h2><span class="text-blue-600 font-semibold">Blue</span> color channel options</h2>
                                         <select class="bg-blue-200 rounded-lg py-0.5 px-4 outline-none" id="filterType">
-                                            <option value="gauss">Gauss</option>
+                                            <option value="gauss">Gauss Blur</option>
                                             <option value="boxBlur">Box Blur</option>
                                             <option value="cylinderBlur">Cylinder Blur</option>
                                         </select>
@@ -159,6 +138,13 @@
                                         <label for="sigma">Sigma value2: <output class="italic" id="sigma-value2">auto</output></label><br>
                                         <input class="accent-blue-400 bg-zinc-200" id="time-filter-applied" type="range" min="1" max="10" value="0">
                                         <label for="time-filter-applied">Times filter is applied: <output class="italic" id="time-filter-applied-value">1</output></label>
+                                    </div>
+                                    <div class="flex justify-between border-b-4 border-blue-400 pb-2">
+                                        <h2>Defoucs image with x dioptre</h2>
+                                    </div>
+                                    <div class="pt-2">
+                                        <input class="accent-blue-400 bg-zinc-200" id="dipotre-slider" type="range" min="0" max="5" value="0" step="0.25">
+                                        <label for="dipotre-slider">Dioptre: <output class="italic" id="dipotre-slider-value">0</output></label><br>
                                     </div>
                                 </div>
                             </div>

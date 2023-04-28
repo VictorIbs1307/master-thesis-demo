@@ -37,38 +37,11 @@ let isPlayground = false;
 
 function init() {
     importFileInit(imageRowSlice!);
-    
-    const menuOptionTabs = document.querySelectorAll<HTMLInputElement>('[id=menuOptionTab]');
-    const dioptreMenu = document.getElementById("dioptreMenu") as HTMLInputElement;
-    const playgroundMenu = document.getElementById("playgroundMenu") as HTMLInputElement;
-
-    const buttonColorClasses = ["bg-red-200", "bg-gray-300"];
-
-    menuOptionTabs[0].addEventListener('click', () => {
-        dioptreMenu.style.display = "flex"
-        playgroundMenu.style.display = "none"
-        isPlayground = false;
-        menuOptionTabs[0].classList.remove(buttonColorClasses[1]);
-        menuOptionTabs[0].classList.add(buttonColorClasses[0])
-        menuOptionTabs[1].classList.remove(buttonColorClasses[0]);
-        menuOptionTabs[1].classList.add(buttonColorClasses[1]);
-    });
-
-    menuOptionTabs[1].addEventListener('click', () => {
-        dioptreMenu.style.display = "none"
-        playgroundMenu.style.display = "flex"
-        isPlayground = true;
-        menuOptionTabs[0].classList.remove(buttonColorClasses[0]);
-        menuOptionTabs[0].classList.add(buttonColorClasses[1])
-        menuOptionTabs[1].classList.remove(buttonColorClasses[1]);
-        menuOptionTabs[1].classList.add(buttonColorClasses[0]);
-    });
-        
 
 
     resetButton!.addEventListener("click", function() {
-        resetAllOptions();
-        update();
+        resetOptions(true);
+        update(false);
     });
 
     inputConfigFileButton!.addEventListener('click', () => { 
@@ -92,7 +65,7 @@ function init() {
                     gaussSettings.updateSigmaValue(i, element.sigma);
                     gaussSettings.updateSigma2Value(i, element.sigma2);
                 });
-                update();
+                update(false);
             } catch (error) {
                 console.log('Error parsing JSON');
             }
@@ -105,7 +78,7 @@ function init() {
 
     imageRowSlice!.addEventListener('input', function() {
         imageRowSliceValue!.value = imageRowSlice!.value;
-        update();
+        update(isPlayground);
     }, false);
 
     saveButton!.addEventListener('click', () => {
@@ -183,9 +156,12 @@ function diotreTester(){
     canvasManager.setProcessCanvasImageData(pixels);
 }
 
-function update() {
+function update(newIsPlayground: boolean) {
+    isPlayground = newIsPlayground;
+    resetOptions(false);
     if(!isPlayground){
         diotreTester();
+        
         return
     }
 
@@ -226,17 +202,26 @@ function applyKernel() {
     canvasManager.setProcessCanvasImageData(pixels);
 }
 
-function resetAllOptions() {
-    kernelSettings.reset();
-    gaussSettings.reset()
-    filterSettings.reset();
+function resetOptions(resetAll: boolean) {
+    if (resetAll) {
+        kernelSettings.reset();
+        gaussSettings.reset();
+        filterSettings.reset();
+        diotresSettings.reset();
+        imageRowSliceValue!.value = "0";
+        imageRowSlice!.value = "0";
+        canvasManager.reset(); 
+        return;
+    } 
+    if (!isPlayground) {
+        kernelSettings.reset();
+        gaussSettings.reset();
+        filterSettings.reset();
+        return;
+    } 
     diotresSettings.reset();
-
-    imageRowSliceValue!.value = "0";
-    imageRowSlice!.value = "0";
-
-    
-    canvasManager.reset(); 
+        
+      
 }
  
 init() 

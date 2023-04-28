@@ -1,4 +1,3 @@
-import { setMaxIdleHTTPParsers } from "http";
 import { Kernel } from "./kernel";
 
 export class FilterDioptre {

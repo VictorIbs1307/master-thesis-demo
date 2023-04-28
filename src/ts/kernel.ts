@@ -79,7 +79,6 @@ export class Kernel {
             array[row] = new Array(dim);
         
         this.makeCircle(width, width, width, array, dim, dim);  
-        console.log(array);
         this.test = array; 
     }
 

@@ -9,7 +9,7 @@ export class KernelSettings {
         return this._values;
     }
 
-    constructor(callback: () => void) {
+    constructor(callback: (newIsPlayground: boolean) => void) {
         this._sliders = document.querySelectorAll<HTMLInputElement>('[id=kernal-size]');
         this._sliderLabels = document.querySelectorAll<HTMLInputElement>('[id=kernal-size-value]');
         this._values = new Array<number>(this._sliders.length).fill(0);
@@ -23,7 +23,7 @@ export class KernelSettings {
                 if(sliderValue === "0"){
                     this._sliderLabels[i].value = "auto";
                 }
-                callback();
+                callback(true);
             }, false);
         };
     }

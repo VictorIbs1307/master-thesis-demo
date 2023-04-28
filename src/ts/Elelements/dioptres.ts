@@ -4,9 +4,6 @@ export class DiotresSettings {
     private _values: number[];
 
     private _ppmInput: HTMLInputElement;
-    
-    private _colorOptionMenuTabButtons: NodeListOf<HTMLInputElement>;
-    private _colorOptionMenus: NodeListOf<HTMLElement>
 
     private _resetValue: string = "0";
 
@@ -16,15 +13,12 @@ export class DiotresSettings {
     }
 //#endregion
 
-    constructor(callback: () => void) {
+    constructor(callback: (newIsPlayground: boolean) => void) {
         this._sliders = document.querySelectorAll<HTMLInputElement>('[id=dipotre-slider]');
         this._sliderLabels = document.querySelectorAll<HTMLInputElement>('[id=dipotre-slider-value]');
         this._values = new Array<number>(this._sliders.length).fill(0);
 
         this._ppmInput = document.getElementById("PPM") as HTMLInputElement;
-
-        this._colorOptionMenuTabButtons = document.querySelectorAll<HTMLInputElement>('[id=colorOptionDioptreMenuTab]');
-        this._colorOptionMenus = document.querySelectorAll<HTMLElement>('[id=colorOptionDioptreMenu]');
 
         for (let i = 0; i < this._sliders.length; i++) {
             this._sliders[i].addEventListener('input', () => {
@@ -33,30 +27,10 @@ export class DiotresSettings {
                 this._values[i] = parseFloat(sliderValue);
             }, false);
             this._sliders[i].addEventListener('mouseup', () => {
-                callback();
+                callback(false);
             }, false);
         };
 
-        const buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
-        this._colorOptionMenuTabButtons.forEach((button: HTMLInputElement) => {
-        button.addEventListener('click', () => {
-
-            // Turn all non-clicked buttons grey
-            this._colorOptionMenuTabButtons.forEach((otherButton: HTMLInputElement, i: number) => {
-            otherButton.classList.remove(...buttonColorClasses);
-
-            if (otherButton !== button) {
-                otherButton.classList.add(buttonColorClasses[3]);
-                this._colorOptionMenus[i].style.display = "none";
-                return;
-            }
-
-            otherButton.classList.add(buttonColorClasses[i]);
-            this._colorOptionMenus[i].style.display = "flex";
-
-            });
-        });
-        });
     }
 
     public reset(){
