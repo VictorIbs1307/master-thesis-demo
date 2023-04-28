@@ -40,7 +40,7 @@ function drawFrame(source: HTMLImageElement | HTMLVideoElement) {
       }
 
     // Change the resizing logic
-    if (width > height) {
+   /*  if (width > height) {
         if (width > MAX_WIDTH) {
             height = height * (MAX_WIDTH / width);
             width = MAX_WIDTH;
@@ -50,7 +50,7 @@ function drawFrame(source: HTMLImageElement | HTMLVideoElement) {
             width = width * (MAX_HEIGHT / height);
             height = MAX_HEIGHT;
         }
-    }
+    } */
 
     const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
     const context = canvas.getContext("2d");

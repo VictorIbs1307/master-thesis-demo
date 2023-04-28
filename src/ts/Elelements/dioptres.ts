@@ -94,8 +94,8 @@ export class DiotresSettings {
 
         // Round to odd number
         kernelSize = 2* Math.floor(kernelSize/2) + 1;
-        console.log("kernelSize: " + kernelSize)
-        console.log(this._values[colorChannel]);
+        //console.log("kernelSize: " + kernelSize)
+        //console.log(this._values[colorChannel]);
         return kernelSize;
     }
 }

@@ -110,12 +110,17 @@ function init() {
 
     saveButton!.addEventListener('click', () => {
         var pixels = canvasManager.getHiddenImageData();
-
-        const timeFiltersAplliedValuesArray = filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
-        filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
+        
+        if(!isPlayground){
+            filterDioptre.applyToImage(pixels);
+        }
+        else {
+            const timeFiltersAplliedValuesArray = filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+            filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
+        }
 
         var newCanvas = canvasManager.createNewCanvas(pixels);
-
+        
         const filename = window.prompt('Enter a filename', 'image.png');
         if (filename) {
             const downloadLink = document.createElement('a');
@@ -159,11 +164,18 @@ function diotreTester(){
     
     filterDioptre.kernels.forEach((kernel, i) => {
         const kernelSize = diotresSettings.calculateKernelSize(i); 
-        kernel.createCircularKernel(kernelSize); 
+        /* kernel.createCircularKernel(kernelSize); */ 
+        if(kernelSize != 0){
+            kernel.createCircularKernel(5); 
+            //kernel.createGaussianKernel2D(5, 5/7);    
+        }
+        else {
+            kernel.createCircularKernel(kernelSize); 
+        }
     });
 
     let pixels = canvasManager.getOrginalImageData();
-
+    
     filterDioptre.applyToImage(pixels);
 
     illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));

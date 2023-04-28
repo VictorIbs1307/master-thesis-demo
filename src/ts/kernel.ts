@@ -79,42 +79,81 @@ export class Kernel {
             array[row] = new Array(dim);
         
         this.makeCircle(width, width, width, array, dim, dim);  
+        console.log(array);
         this.test = array; 
     }
 
-        makeCircle(centerX: number, centerY: number, radius: number, a: number[][], arrayWidth: number, arrayHeight: number)
+    makeCircle(centerX: number, centerY: number, radius: number, a: number[][], arrayWidth: number, arrayHeight: number)
+    {
+        var x, y, d, yDiff, threshold, radiusSq;
+        radius = (radius * 2);// + 1;
+        radiusSq = (radius * radius) / 4;
+        let sum = 0;
+        for(y = 0; y < arrayHeight; y++)
         {
-            var x, y, d, yDiff, threshold, radiusSq;
-            radius = (radius * 2);// + 1;
-            radiusSq = (radius * radius) / 4;
-            let sum = 0;
-            for(y = 0; y < arrayHeight; y++)
+            yDiff = y - centerY;
+            threshold = radiusSq - (yDiff * yDiff);
+            for(x = 0; x < arrayWidth; x++)
             {
-                yDiff = y - centerY;
-                threshold = radiusSq - (yDiff * yDiff);
-                for(x = 0; x < arrayWidth; x++)
-                {
-                    d = x - centerX;
-                    if((d * d) > threshold){
-                        a[y][x] = 0;
-                    }
-                    else {
-                        a[y][x] = 1;
-                        sum += 1;
-                    }
+                d = x - centerX;
+                if((d * d) > threshold){
+                    a[y][x] = 0;
                 }
-            }
-
-            sum = 1/sum;
-            for(y = 0; y < arrayHeight; y++)
-            {
-                for(x = 0; x < arrayWidth; x++)
-                {
-                    if(a[y][x] == 1){
-                        a[y][x] = sum;
-                    }
+                else {
+                    a[y][x] = 1;
+                    sum += 1;
                 }
             }
         }
+
+        sum = 1/sum;
+        for(y = 0; y < arrayHeight; y++)
+        {
+            for(x = 0; x < arrayWidth; x++)
+            {
+                if(a[y][x] == 1){
+                    a[y][x] = sum;
+                }
+            }
+        }
+    }
   
+    createGaussianKernel2D(kernelSize: number, sigma: number) {
+        const kernel: number[][] = [];
+        this.kernelSize = kernelSize;
+        // Calculate the center of the kernel
+        const center = Math.floor(kernelSize / 2);
+      
+        // Calculate the normalization factor
+        const norm = 1 / (2 * Math.PI * sigma * sigma);
+      
+        // Calculate the kernel values and sum
+        let sum = 0;
+        for (let i = 0; i < kernelSize; i++) {
+          kernel[i] = [];
+          for (let j = 0; j < kernelSize; j++) {
+            const x = i - center;
+            const y = j - center;
+            const exponent = -(x * x + y * y) / (2 * sigma * sigma);
+            const value = norm * Math.exp(exponent);
+            kernel[i][j] = value;
+            sum += value;
+          }
+        }
+      
+        // Normalize the kernel
+        for (let i = 0; i < kernelSize; i++) {
+          for (let j = 0; j < kernelSize; j++) {
+            kernel[i][j] /= sum;
+          }
+        }
+      
+        let sum2 = 0;
+        for (let i = 0; i < kernel.length; i++) {
+            for (let j = 0; j < kernel[i].length; j++) {
+              sum2 += kernel[i][j];
+            }
+          }
+        this.test = kernel;
+      }
 }
