@@ -197,8 +197,9 @@ export class Illustrator {
                 x: plotting_labels[i],
                 y: plotting_data[i],
                 name: this.plotNames[i],
-                line: { color: this.plotColors[i] },
+                line: { shape: 'spline', color: this.plotColors[i] },
                 type: 'scatter',
+                mode: 'lines',
                 visible: isTraceVisible ? true : "legendonly"
             });
         }
