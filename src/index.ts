@@ -138,9 +138,9 @@ function diotreTester(){
     filterDioptre.kernels.forEach((kernel, i) => {
         const kernelSize = diotresSettings.calculateKernelSize(i); 
         /* kernel.createCircularKernel(kernelSize); */ 
-        if(kernelSize != 0){
-            kernel.createCircularKernel(5); 
-            //kernel.createGaussianKernel2D(5, 5/7);    
+        if(kernelSize == 0){
+            kernel.createCircularKernel(0);
+            //kernel.createGaussianKernel2D(5, 5/7);   
         }
         else {
             kernel.createCircularKernel(kernelSize); 

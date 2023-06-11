@@ -42,6 +42,7 @@ export class DiotresSettings {
     }
 
     public calculateKernelSize(colorChannel: number): number{
+        console.log(this._values[colorChannel]);
         if(this._values[colorChannel] == 0){
             return 0;
         }
@@ -70,6 +71,7 @@ export class DiotresSettings {
         kernelSize = 2* Math.floor(kernelSize/2) + 1;
         //console.log("kernelSize: " + kernelSize)
         //console.log(this._values[colorChannel]);
+        console.log(kernelSize);
         return kernelSize;
     }
 }
