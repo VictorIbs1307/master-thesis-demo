@@ -162,17 +162,17 @@ function drawFrame(source) {
     height = source.videoHeight;
   }
   // Change the resizing logic
-  if (width > height) {
-    if (width > MAX_WIDTH) {
-      height = height * (MAX_WIDTH / width);
-      width = MAX_WIDTH;
-    }
-  } else {
-    if (height > MAX_HEIGHT) {
-      width = width * (MAX_HEIGHT / height);
-      height = MAX_HEIGHT;
-    }
-  }
+  /*  if (width > height) {
+       if (width > MAX_WIDTH) {
+           height = height * (MAX_WIDTH / width);
+           width = MAX_WIDTH;
+       }
+   } else {
+       if (height > MAX_HEIGHT) {
+           width = width * (MAX_HEIGHT / height);
+           height = MAX_HEIGHT;
+       }
+   } */
   var canvas = document.getElementById("Mycanvas");
   var context = canvas.getContext("2d");
   var canvas2 = document.getElementById("ProcessCanvas");
@@ -197,31 +197,8 @@ var Kernel = /** @class */function () {
     this.kernelSize = 0;
     this.subtract = false;
     this.self = new Float32Array();
-    /*     printMatrix() {
-            var k = [];
-            for (var i = 0; i < this.self.length; i++) {
-                k.push(kernel[i] / kernel[0]);
-            }
-    
-            var k_t = []
-            for (var i = 0; i < k.length; i++) {
-                k_t.push([k[i]])
-            };
-    
-            var k_m = multiply(k_t, [k]);
-    
-            var k_m_sum = k_m.reduce(function(a, b) { return a.concat(b) })
-                .reduce(function(a, b) { return a + b });
-    
-            for (var row = 0; row < k_m.length; row++) {
-                for (var col = 0; col < k_m[0].length; col++) {
-                    k_m[row][col] = k_m[row][col] / k_m_sum;
-                }
-            }
-            console.log(k_m)
-        } */
+    this.test = new Array(0);
   }
-
   Kernel.prototype.initGauss = function (sigma, sigma2, kernelSize) {
     this.sigma = sigma;
     this.sigma2 = sigma2;
@@ -263,6 +240,80 @@ var Kernel = /** @class */function () {
       kernel[i] /= sum;
     }
     this.self = kernel;
+  };
+  Kernel.prototype.createCircularKernel = function (kernelSize) {
+    // test code:
+    if (kernelSize == -1) {
+      kernelSize = 0;
+    }
+    this.kernelSize = kernelSize;
+    var width = (kernelSize - 1) / 2;
+    var dim = width * 2 + 1;
+    var array = new Array(dim);
+    for (var row = 0; row < dim; row++) array[row] = new Array(dim);
+    this.makeCircle(width, width, width, array, dim, dim);
+    this.test = array;
+  };
+  Kernel.prototype.makeCircle = function (centerX, centerY, radius, a, arrayWidth, arrayHeight) {
+    var x, y, d, yDiff, threshold, radiusSq;
+    radius = radius * 2; // + 1;
+    radiusSq = radius * radius / 4;
+    var sum = 0;
+    for (y = 0; y < arrayHeight; y++) {
+      yDiff = y - centerY;
+      threshold = radiusSq - yDiff * yDiff;
+      for (x = 0; x < arrayWidth; x++) {
+        d = x - centerX;
+        if (d * d > threshold) {
+          a[y][x] = 0;
+        } else {
+          a[y][x] = 1;
+          sum += 1;
+        }
+      }
+    }
+    sum = 1 / sum;
+    for (y = 0; y < arrayHeight; y++) {
+      for (x = 0; x < arrayWidth; x++) {
+        if (a[y][x] == 1) {
+          a[y][x] = sum;
+        }
+      }
+    }
+  };
+  Kernel.prototype.createGaussianKernel2D = function (kernelSize, sigma) {
+    var kernel = [];
+    this.kernelSize = kernelSize;
+    // Calculate the center of the kernel
+    var center = Math.floor(kernelSize / 2);
+    // Calculate the normalization factor
+    var norm = 1 / (2 * Math.PI * sigma * sigma);
+    // Calculate the kernel values and sum
+    var sum = 0;
+    for (var i = 0; i < kernelSize; i++) {
+      kernel[i] = [];
+      for (var j = 0; j < kernelSize; j++) {
+        var x = i - center;
+        var y = j - center;
+        var exponent = -(x * x + y * y) / (2 * sigma * sigma);
+        var value = norm * Math.exp(exponent);
+        kernel[i][j] = value;
+        sum += value;
+      }
+    }
+    // Normalize the kernel
+    for (var i = 0; i < kernelSize; i++) {
+      for (var j = 0; j < kernelSize; j++) {
+        kernel[i][j] /= sum;
+      }
+    }
+    var sum2 = 0;
+    for (var i = 0; i < kernel.length; i++) {
+      for (var j = 0; j < kernel[i].length; j++) {
+        sum2 += kernel[i][j];
+      }
+    }
+    this.test = kernel;
   };
   return Kernel;
 }();
@@ -2576,9 +2627,11 @@ var Illustrator = /** @class */function () {
         y: plotting_data[i],
         name: this.plotNames[i],
         line: {
+          shape: 'spline',
           color: this.plotColors[i]
         },
         type: 'scatter',
+        mode: 'lines',
         visible: isTraceVisible ? true : "legendonly"
       });
     }
@@ -2600,7 +2653,485 @@ var Illustrator = /** @class */function () {
   return Illustrator;
 }();
 exports.Illustrator = Illustrator;
-},{"plotly.js-dist-min":"../node_modules/plotly.js-dist-min/plotly.min.js"}],"index.ts":[function(require,module,exports) {
+},{"plotly.js-dist-min":"../node_modules/plotly.js-dist-min/plotly.min.js"}],"ts/Elelements/dioptres.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var DiotresSettings = /** @class */function () {
+  //#endregion
+  function DiotresSettings(callback) {
+    var _this = this;
+    this._resetValue = "0";
+    this._sliders = document.querySelectorAll('[id=dipotre-slider]');
+    this._sliderLabels = document.querySelectorAll('[id=dipotre-slider-value]');
+    this._values = new Array(this._sliders.length).fill(0);
+    this._ppmInput = document.getElementById("PPM");
+    var _loop_1 = function _loop_1(i) {
+      this_1._sliders[i].addEventListener('input', function () {
+        var sliderValue = _this._sliders[i].value;
+        _this._sliderLabels[i].value = sliderValue;
+        _this._values[i] = parseFloat(sliderValue);
+      }, false);
+      this_1._sliders[i].addEventListener('mouseup', function () {
+        callback(false);
+      }, false);
+    };
+    var this_1 = this;
+    for (var i = 0; i < this._sliders.length; i++) {
+      _loop_1(i);
+    }
+    ;
+  }
+  Object.defineProperty(DiotresSettings.prototype, "values", {
+    //#region get & set
+    get: function get() {
+      return this._values;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  DiotresSettings.prototype.reset = function () {
+    for (var i = 0; i < this._sliders.length; i++) {
+      this._sliderLabels[i].value = this._resetValue;
+      this._sliders[i].value = this._resetValue;
+      ;
+      this._values[i] = parseFloat(this._resetValue);
+    }
+    ;
+  };
+  DiotresSettings.prototype.calculateKernelSize = function (colorChannel) {
+    console.log(this._values[colorChannel]);
+    if (this._values[colorChannel] == 0) {
+      return 0;
+    }
+    var pupilArea = 0.0025;
+    var dioptre = this._values[colorChannel];
+    // dioptre = 1.5;
+    // PSF (Point Spread Function) - Result is a diameter in radians.
+    var diameter = pupilArea * dioptre;
+    // console.log("pupilArea: " + pupilArea)
+    // console.log("diotre: " + dioptre)
+    // console.log("diameter: " + diameter)
+    // Distance from eye to screen in meters
+    var distanceToScreen = 1;
+    var distanceInMillimeter = 2 * Math.tan(diameter / 2) * distanceToScreen;
+    // console.log("distanceInMillimeter: " + distanceInMillimeter)
+    // Screen PPM (Pixels Per Millimeter)
+    var ppm = parseFloat(this._ppmInput.value) * 1000;
+    // console.log("ppm: " + ppm);
+    var kernelSize = Math.floor(distanceInMillimeter * ppm);
+    // console.log("kernelSize: " + kernelSize)
+    // Round to odd number
+    kernelSize = 2 * Math.floor(kernelSize / 2) + 1;
+    //console.log("kernelSize: " + kernelSize)
+    //console.log(this._values[colorChannel]);
+    console.log(kernelSize);
+    return kernelSize;
+  };
+  return DiotresSettings;
+}();
+exports.DiotresSettings = DiotresSettings;
+},{}],"ts/Elelements/kernelSettings.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var KernelSettings = /** @class */function () {
+  function KernelSettings(callback) {
+    var _this = this;
+    this._resetValue = "0";
+    this._sliders = document.querySelectorAll('[id=kernal-size]');
+    this._sliderLabels = document.querySelectorAll('[id=kernal-size-value]');
+    this._values = new Array(this._sliders.length).fill(0);
+    var _loop_1 = function _loop_1(i) {
+      this_1._sliders[i].addEventListener('input', function () {
+        var sliderValue = _this._sliders[i].value;
+        _this._values[i] = parseFloat(sliderValue);
+        _this._sliderLabels[i].value = sliderValue;
+        if (sliderValue === "0") {
+          _this._sliderLabels[i].value = "auto";
+        }
+        callback(true);
+      }, false);
+    };
+    var this_1 = this;
+    for (var i = 0; i < this._sliders.length; i++) {
+      _loop_1(i);
+    }
+    ;
+  }
+  Object.defineProperty(KernelSettings.prototype, "values", {
+    get: function get() {
+      return this._values;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  KernelSettings.prototype.updateValue = function (index, value) {
+    this._values[index] = parseFloat(value);
+    this._sliders[index].value = value;
+    if (value === "0") {
+      this._sliderLabels[index].value = "auto";
+      return;
+    }
+    this._sliderLabels[index].value = value;
+  };
+  KernelSettings.prototype.reset = function () {
+    for (var i = 0; i < this._sliders.length; i++) {
+      this._sliderLabels[i].value = this._resetValue;
+      this._sliders[i].value = this._resetValue;
+      ;
+      this._values[i] = parseFloat(this._resetValue);
+    }
+    ;
+  };
+  return KernelSettings;
+}();
+exports.KernelSettings = KernelSettings;
+},{}],"ts/Elelements/gaussSettings.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var GaussSettings = /** @class */function () {
+  //#endregion
+  function GaussSettings(callback) {
+    var _this = this;
+    this._resetValue = "0";
+    this._sigmaSliders = document.querySelectorAll('[id=sigma]');
+    this._sigma2Sliders = document.querySelectorAll('[id=sigma2]');
+    this._sigmaSliderLabels = document.querySelectorAll('[id=sigma-value]');
+    this._sigma2SliderLabels = document.querySelectorAll('[id=sigma-value2]');
+    this._sigmaValues = new Array(this._sigmaSliders.length).fill(0);
+    this._sigma2Values = new Array(this._sigma2Sliders.length).fill(0);
+    var _loop_1 = function _loop_1(i) {
+      this_1._sigmaSliders[i].addEventListener('input', function () {
+        var sliderValue = _this._sigmaSliders[i].value;
+        _this._sigmaValues[i] = parseFloat(sliderValue);
+        _this._sigmaSliderLabels[i].value = sliderValue;
+        callback(true);
+      }, false);
+    };
+    var this_1 = this;
+    for (var i = 0; i < this._sigmaSliders.length; i++) {
+      _loop_1(i);
+    }
+    ;
+    var _loop_2 = function _loop_2(i) {
+      this_2._sigma2Sliders[i].addEventListener('input', function () {
+        var sliderValue = _this._sigma2Sliders[i].value;
+        _this._sigma2Values[i] = parseFloat(sliderValue);
+        _this._sigma2SliderLabels[i].value = sliderValue;
+        if (sliderValue === "0") {
+          _this._sigma2SliderLabels[i].value = "auto";
+        }
+        callback(true);
+      }, false);
+    };
+    var this_2 = this;
+    for (var i = 0; i < this._sigma2Sliders.length; i++) {
+      _loop_2(i);
+    }
+    ;
+  }
+  Object.defineProperty(GaussSettings.prototype, "sigmaSliderLabels", {
+    //#region get & set
+    get: function get() {
+      return this._sigmaSliderLabels;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  Object.defineProperty(GaussSettings.prototype, "sigma2SliderLabels", {
+    get: function get() {
+      return this._sigma2SliderLabels;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  Object.defineProperty(GaussSettings.prototype, "sigmaValues", {
+    get: function get() {
+      return this._sigmaValues;
+    },
+    set: function set(value) {
+      this._sigmaValues = value;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  Object.defineProperty(GaussSettings.prototype, "sigma2Values", {
+    get: function get() {
+      return this._sigma2Values;
+    },
+    set: function set(value) {
+      this._sigma2Values = value;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  GaussSettings.prototype.updateSigmaValue = function (index, value) {
+    this._sigmaValues[index] = parseFloat(value);
+    this._sigmaSliders[index].value = value;
+    this._sigmaSliderLabels[index].value = value;
+  };
+  GaussSettings.prototype.updateSigma2Value = function (index, value) {
+    this._sigma2Values[index] = parseFloat(value);
+    this._sigma2Sliders[index].value = value;
+    if (value === "0") {
+      this._sigma2SliderLabels[index].value = "auto";
+      return;
+    }
+    this._sigma2SliderLabels[index].value = value;
+  };
+  GaussSettings.prototype.reset = function () {
+    for (var i = 0; i < this._sigmaSliders.length; i++) {
+      this._sigmaSliderLabels[i].value = this._resetValue;
+      this._sigmaSliders[i].value = this._resetValue;
+      this._sigmaValues[i] = parseFloat(this._resetValue);
+    }
+    ;
+    for (var i = 0; i < this._sigma2Sliders.length; i++) {
+      this._sigma2SliderLabels[i].value = this._resetValue;
+      this._sigma2Sliders[i].value = this._resetValue;
+      this._sigma2Values[i] = parseFloat(this._resetValue);
+    }
+    ;
+  };
+  return GaussSettings;
+}();
+exports.GaussSettings = GaussSettings;
+},{}],"ts/Elelements/filterSettings.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var FilterSettings = /** @class */function () {
+  //#endregion
+  function FilterSettings(callback) {
+    var _this = this;
+    this._resetSliderValue = "1";
+    this._resetCheckboxValue = false;
+    this._timeFiltersAplliedSlider = document.querySelectorAll('[id=time-filter-applied]');
+    this._timeFiltersAplliedLabels = document.querySelectorAll('[id=time-filter-applied-value]');
+    this._filterTypeDropdownFields = document.querySelectorAll('[id=filterType]');
+    this._blurOrSharpenCheckboxs = document.querySelectorAll('[id=blurOrSharpenCheckbox]');
+    this._colorOptionMenuTabButtons = document.querySelectorAll('[id=colorOptionMenuTab]');
+    this._colorOptionMenus = document.querySelectorAll('[id=colorOptionMenu]');
+    this._timeFilterAplliedValues = new Array(this._timeFiltersAplliedSlider.length).fill(0);
+    this._filterTypeValues = new Array(this._filterTypeDropdownFields.length).fill("");
+    this._blurOrSharpenCheckboxValues = new Array(this._blurOrSharpenCheckboxs.length).fill(false);
+    this._timeFiltersAplliedSlider.forEach(function (slider, i) {
+      slider.addEventListener("input", function () {
+        _this._timeFiltersAplliedLabels[i].value = slider.value;
+        _this._timeFilterAplliedValues[i] = parseFloat(slider.value);
+        callback(true);
+      });
+      _this._timeFilterAplliedValues[i] = parseFloat(slider.value);
+    });
+    this._filterTypeDropdownFields.forEach(function (dropdownField, i) {
+      dropdownField.addEventListener("change", function () {
+        _this._filterTypeValues[i] = dropdownField.value;
+        callback(true);
+      });
+      _this._filterTypeValues[i] = dropdownField.value;
+    });
+    this._blurOrSharpenCheckboxs.forEach(function (checkbox, i) {
+      checkbox.addEventListener("change", function () {
+        _this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
+        callback(true);
+      });
+      _this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
+    });
+    var buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
+    this._colorOptionMenuTabButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        // Turn all non-clicked buttons grey
+        _this._colorOptionMenuTabButtons.forEach(function (otherButton, i) {
+          var _a;
+          (_a = otherButton.classList).remove.apply(_a, buttonColorClasses);
+          if (otherButton !== button) {
+            otherButton.classList.add(buttonColorClasses[3]);
+            _this._colorOptionMenus[i].style.display = "none";
+            return;
+          }
+          otherButton.classList.add(buttonColorClasses[i]);
+          _this._colorOptionMenus[i].style.display = "flex";
+        });
+      });
+    });
+  }
+  Object.defineProperty(FilterSettings.prototype, "colorOptionMenuTabButtons", {
+    //#region get & set
+    //TODO: Can this be change to return a list of "names" istead?
+    get: function get() {
+      return this._colorOptionMenuTabButtons;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  Object.defineProperty(FilterSettings.prototype, "timeFilterAplliedValues", {
+    get: function get() {
+      return this._timeFilterAplliedValues;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  Object.defineProperty(FilterSettings.prototype, "filterTypeValues", {
+    get: function get() {
+      return this._filterTypeValues;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  Object.defineProperty(FilterSettings.prototype, "blurOrSharpenCheckboxValues", {
+    get: function get() {
+      return this._blurOrSharpenCheckboxValues;
+    },
+    enumerable: true,
+    configurable: true
+  });
+  FilterSettings.prototype.updateFilterTypeValue = function (index, value) {
+    this._filterTypeValues[index] = value;
+    this._filterTypeDropdownFields[index].value = value;
+  };
+  FilterSettings.prototype.updateTimesFilterAppliedTypeValue = function (index, value) {
+    this._timeFilterAplliedValues[index] = parseInt(value);
+    this._timeFiltersAplliedSlider[index].value = value;
+    this._timeFiltersAplliedLabels[index].value = value;
+  };
+  FilterSettings.prototype.updateBlurOrSharpenCheckboxValue = function (index, value) {
+    this._blurOrSharpenCheckboxs[index].checked = value == "true";
+    this._blurOrSharpenCheckboxValues[index] = value == "true";
+  };
+  FilterSettings.prototype.reset = function () {
+    var _this = this;
+    for (var i = 0; i < this._timeFiltersAplliedSlider.length; i++) {
+      this._timeFiltersAplliedLabels[i].value = this._resetSliderValue;
+      this._timeFiltersAplliedSlider[i].value = this._resetSliderValue;
+      this._timeFilterAplliedValues[i] = parseFloat(this._resetSliderValue);
+    }
+    ;
+    this._blurOrSharpenCheckboxs.forEach(function (checkbox, i) {
+      checkbox.checked = _this._resetCheckboxValue;
+      _this._blurOrSharpenCheckboxValues[i] = _this._resetCheckboxValue;
+    });
+  };
+  return FilterSettings;
+}();
+exports.FilterSettings = FilterSettings;
+},{}],"ts/Elelements/canvasManager.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var CanvasManager = /** @class */function () {
+  function CanvasManager() {
+    this._originalCanvas = document.getElementById("Mycanvas");
+    this._processCanvas = document.getElementById("ProcessCanvas");
+    this._hiddenCanvas = document.getElementById("HiddenCanvas");
+    this._originalContext = this._originalCanvas.getContext('2d');
+    this._processContext = this._processCanvas.getContext('2d');
+    this._hiddenContext = this._hiddenCanvas.getContext('2d');
+  }
+  CanvasManager.prototype.getHiddenImageData = function () {
+    return this._hiddenContext.getImageData(0, 0, this._hiddenCanvas.width, this._hiddenCanvas.height);
+  };
+  CanvasManager.prototype.getOrginalImageData = function () {
+    return this._originalContext.getImageData(0, 0, this._originalCanvas.width, this._originalCanvas.height);
+  };
+  CanvasManager.prototype.setProcessCanvasImageData = function (pixels) {
+    this._processContext.putImageData(pixels, 0, 0);
+  };
+  CanvasManager.prototype.createNewCanvas = function (pixels) {
+    var newCanvas = document.createElement('canvas');
+    newCanvas.width = pixels.width;
+    newCanvas.height = pixels.height;
+    var newContext = newCanvas.getContext('2d');
+    newContext.putImageData(pixels, 0, 0);
+    return newCanvas;
+  };
+  CanvasManager.prototype.reset = function () {
+    var originalPixels = this.getOrginalImageData();
+    this._processContext.putImageData(originalPixels, 0, 0);
+  };
+  return CanvasManager;
+}();
+exports.CanvasManager = CanvasManager;
+},{}],"ts/filterDioptre.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var kernel_1 = require("./kernel");
+var FilterDioptre = /** @class */function () {
+  function FilterDioptre() {
+    this.kernels = [new kernel_1.Kernel(), new kernel_1.Kernel(), new kernel_1.Kernel()];
+  }
+  FilterDioptre.prototype.applyToImage = function (pixels) {
+    var _this = this;
+    this.kernels.forEach(function (kernel, i) {
+      if (kernel.kernelSize !== 0 && kernel.kernelSize % 2 != 0) {
+        _this.applyKernel(pixels, i, kernel.test);
+      }
+    });
+    /* for(let i = 0; i<3; i++){
+        this.applyKernel(pixels, i, this.kernels[0].test);
+    } */
+  };
+
+  FilterDioptre.prototype.applyKernel = function (pixels, colorChannel, kernel) {
+    console.log(kernel);
+    if (pixels !== undefined && pixels !== null) {
+      var kernelSize = kernel.length;
+      var data = pixels.data;
+      var buffer = new Uint8ClampedArray(data.length);
+      var w = pixels.width;
+      var h = pixels.height;
+      var dim = (kernelSize - 1) / 2;
+      for (var i = 0; i < h; i++) {
+        for (var j = 0; j < w; j++) {
+          //kernel
+          //let sumThreshHold = 240;
+          var sum = 0;
+          for (var y = -dim; y <= dim; y++) {
+            for (var x = -dim; x <= dim; x++) {
+              if (i + y >= 0 && i + y < h && j + x >= 0 && j + x < w) {
+                sum += kernel[x + dim][y + dim] * data[((i + y) * w + (j + x)) * 4 + colorChannel];
+              } else {
+                sum += kernel[x + dim][y + dim] * 255;
+              }
+            }
+          }
+          /* if(sum != 0){
+              console.log("point: " + data[((i*w + j) * 4) + colorChannel] + " sum: " + sum);
+              
+          }  */
+          buffer[(i * w + j) * 4 + colorChannel] = sum;
+          //if(sum < sumThreshHold || data[((i*w + j) * 4) + colorChannel] < sumThreshHold){
+          //data[((i*w + j) * 4) + colorChannel] = sum;
+          //}
+        }
+      }
+
+      for (var i = 0; i < h; i++) {
+        for (var j = 0; j < w; j++) {
+          data[(i * w + j) * 4 + colorChannel] = buffer[(i * w + j) * 4 + colorChannel];
+        }
+      }
+      return;
+    }
+  };
+  return FilterDioptre;
+}();
+exports.FilterDioptre = FilterDioptre;
+},{"./kernel":"ts/kernel.ts"}],"index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2610,39 +3141,41 @@ Object.defineProperty(exports, "__esModule", {
 var importFile_1 = require("./ts/importFile");
 var filter_1 = require("./ts/filter");
 var illustrations_1 = require("./ts/illustrations");
+var dioptres_1 = require("./ts/Elelements/dioptres");
+var kernelSettings_1 = require("./ts/Elelements/kernelSettings");
+var gaussSettings_1 = require("./ts/Elelements/gaussSettings");
+var filterSettings_1 = require("./ts/Elelements/filterSettings");
+var canvasManager_1 = require("./ts/Elelements/canvasManager");
+var filterDioptre_1 = require("./ts/filterDioptre");
 // #endregion
 // #region variables
 var resetButton = document.querySelector('#reset-all');
 var inputConfigFile = document.querySelector('#input-config-file');
 var inputConfigFileButton = document.getElementById('input-config-file-button');
-var kernelSizes = document.querySelectorAll('[id=kernal-size]');
-var sigmas = document.querySelectorAll('[id=sigma]');
-var sigmas2 = document.querySelectorAll('[id=sigma2]');
-var timeFiltersApllied = document.querySelectorAll('[id=time-filter-applied]');
-var filterTypes = document.querySelectorAll('[id=filterType]');
 var imageRowSlice = document.querySelector('#image-row-slice');
-var blurOrSharpenCheckboxs = document.querySelectorAll('[id=blurOrSharpenCheckbox]');
-var kernalSizesValues = document.querySelectorAll('[id=kernal-size-value]');
-var sigmaValues = document.querySelectorAll('[id=sigma-value]');
-var sigmaValues2 = document.querySelectorAll('[id=sigma-value2]');
-var timeFiltersAplliedValues = document.querySelectorAll('[id=time-filter-applied-value]');
 var imageRowSliceValue = document.querySelector('#image-row-slice-value');
 var saveButton = document.querySelector('#save');
 var saveConfigButton = document.querySelector('#saveConfig');
-var colorOptionMenuTabButtons = document.querySelectorAll('[id=colorOptionMenuTab]');
-var colorOptionMenus = document.querySelectorAll('[id=colorOptionMenu]');
 var filter = new filter_1.Filter();
+var filterDioptre = new filterDioptre_1.FilterDioptre();
 var illustrator = new illustrations_1.Illustrator();
+var kernelSettings = new kernelSettings_1.KernelSettings(update);
+var gaussSettings = new gaussSettings_1.GaussSettings(update);
+var filterSettings = new filterSettings_1.FilterSettings(update);
+var diotresSettings = new dioptres_1.DiotresSettings(update);
+var canvasManager = new canvasManager_1.CanvasManager();
+var isPlayground = false;
 function init() {
   importFile_1.importFileInit(imageRowSlice);
   resetButton.addEventListener("click", function () {
-    resetAllOptions();
-    update();
+    resetOptions(true);
+    update(false);
   });
   inputConfigFileButton.addEventListener('click', function () {
     inputConfigFile.click();
   });
-  inputConfigFile.addEventListener('change', function () {
+  inputConfigFile.addEventListener('input', function () {
+    console.log('File input changed');
     var file = inputConfigFile.files[0];
     var reader = new FileReader();
     reader.onload = function () {
@@ -2650,106 +3183,39 @@ function init() {
       try {
         var jsonObject = JSON.parse(fileContent);
         jsonObject.settings.forEach(function (element, i) {
-          filterTypes[i].value = element.filterType;
-          blurOrSharpenCheckboxs[i].checked = element.blurOrSharpenCheckbox;
-          kernelSizes[i].value = element.kernelSize;
-          kernalSizesValues[i].value = element.kernelSize;
-          sigmas[i].value = element.sigma;
-          sigmaValues[i].value = element.sigma;
-          sigmas2[i].value = element.sigma2;
-          sigmaValues2[i].value = element.sigma2;
-          timeFiltersApllied[i].value = element.timeFiltersApllied;
-          timeFiltersAplliedValues[i].value = element.timeFiltersApllied;
+          filterSettings.updateFilterTypeValue(i, element.filterType);
+          filterSettings.updateBlurOrSharpenCheckboxValue(i, element.blurOrSharpenCheckbox);
+          filterSettings.updateTimesFilterAppliedTypeValue(i, element.timeFiltersApllied);
+          kernelSettings.updateValue(i, element.kernelSize);
+          gaussSettings.updateSigmaValue(i, element.sigma);
+          gaussSettings.updateSigma2Value(i, element.sigma2);
         });
-        update();
+        update(false);
       } catch (error) {
         console.log('Error parsing JSON');
       }
     };
     reader.readAsText(file);
+    inputConfigFile.value = "";
   });
-  var _loop_1 = function _loop_1(i) {
-    kernelSizes[i].addEventListener('input', function () {
-      if (kernelSizes[i].value === "0") {
-        kernalSizesValues[i].value = "auto";
-      } else {
-        kernalSizesValues[i].value = kernelSizes[i].value;
-      }
-      update();
-    }, false);
-  };
-  for (var i = 0; i < kernelSizes.length; i++) {
-    _loop_1(i);
-  }
-  ;
-  var _loop_2 = function _loop_2(i) {
-    sigmas[i].addEventListener('input', function () {
-      sigmaValues[i].value = sigmas[i].value;
-      update();
-    }, false);
-  };
-  for (var i = 0; i < sigmas.length; i++) {
-    _loop_2(i);
-  }
-  ;
-  var _loop_3 = function _loop_3(i) {
-    sigmas2[i].addEventListener('input', function () {
-      if (sigmas2[i].value === "0") {
-        sigmaValues2[i].value = "auto";
-      } else {
-        sigmaValues2[i].value = sigmas2[i].value;
-      }
-      update();
-    }, false);
-  };
-  for (var i = 0; i < sigmas2.length; i++) {
-    _loop_3(i);
-  }
-  ;
-  var _loop_4 = function _loop_4(i) {
-    timeFiltersApllied[i].addEventListener('input', function () {
-      timeFiltersAplliedValues[i].value = timeFiltersApllied[i].value;
-      update();
-    }, false);
-  };
-  for (var i = 0; i < timeFiltersApllied.length; i++) {
-    _loop_4(i);
-  }
-  ;
-  for (var i = 0; i < filterTypes.length; i++) {
-    filterTypes[i].addEventListener("change", function () {
-      update();
-    });
-  }
-  ;
-  for (var i = 0; i < blurOrSharpenCheckboxs.length; i++) {
-    blurOrSharpenCheckboxs[i].addEventListener("change", function () {
-      update();
-    });
-  }
-  ;
   imageRowSlice.addEventListener('input', function () {
     imageRowSliceValue.value = imageRowSlice.value;
-    update();
+    update(isPlayground);
   }, false);
   saveButton.addEventListener('click', function () {
-    var canvas = document.getElementById("HiddenCanvas");
-    var context = canvas.getContext('2d');
-    var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-    var timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(function (input) {
-      return parseInt(input.value);
-    });
-    filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
-    var canvas2 = document.createElement('canvas');
-    canvas2.width = pixels.width;
-    canvas2.height = pixels.height;
-    var context2 = canvas2.getContext('2d');
-    context2.putImageData(pixels, 0, 0);
+    var pixels = canvasManager.getHiddenImageData();
+    if (!isPlayground) {
+      filterDioptre.applyToImage(pixels);
+    } else {
+      var timeFiltersAplliedValuesArray = filterSettings.timeFilterAplliedValues; //Array.from(timeFiltersApllied).map(input => parseInt(input.value));
+      filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
+    }
+    var newCanvas = canvasManager.createNewCanvas(pixels);
     var filename = window.prompt('Enter a filename', 'image.png');
     if (filename) {
       var downloadLink = document.createElement('a');
       downloadLink.setAttribute('download', filename);
-      var dataURL = canvas2.toDataURL('image/png');
+      var dataURL = newCanvas.toDataURL('image/png');
       downloadLink.setAttribute('href', dataURL);
       downloadLink.click();
     }
@@ -2758,15 +3224,15 @@ function init() {
     var contentJson = {
       settings: Array()
     };
-    colorOptionMenuTabButtons.forEach(function (element, i) {
+    filterSettings.colorOptionMenuTabButtons.forEach(function (element, i) {
       contentJson.settings.push({
         name: element.innerHTML,
-        filterType: filterTypes[i].value,
-        blurOrSharpenCheckbox: blurOrSharpenCheckboxs[i].checked,
+        filterType: filterSettings.filterTypeValues[i],
+        blurOrSharpenCheckbox: filterSettings.blurOrSharpenCheckboxValues[i],
         kernelSize: filter.kernels[i].kernelSize,
-        sigma: sigmas[i].value,
-        sigma2: sigmas2[i].value,
-        timeFiltersApllied: timeFiltersApllied[i].value
+        sigma: gaussSettings.sigmaValues[i],
+        sigma2: gaussSettings.sigma2Values[i],
+        timeFiltersApllied: filterSettings.filterTypeValues[i]
       });
     });
     var contentString = JSON.stringify(contentJson);
@@ -2779,91 +3245,82 @@ function init() {
     link.click();
     URL.revokeObjectURL(link.href);
   });
-  var buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
-  colorOptionMenuTabButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      // Turn all non-clicked buttons grey
-      colorOptionMenuTabButtons.forEach(function (otherButton, i) {
-        var _a;
-        (_a = otherButton.classList).remove.apply(_a, buttonColorClasses);
-        if (otherButton !== button) {
-          otherButton.classList.add(buttonColorClasses[3]);
-          colorOptionMenus[i].style.display = "none";
-        } else {
-          otherButton.classList.add(buttonColorClasses[i]);
-          colorOptionMenus[i].style.display = "flex";
-        }
-      });
-    });
-  });
   illustrator.initKernelGraph();
   illustrator.initFrequencyGraph();
 }
-function update() {
+function diotreTester() {
+  filterDioptre.kernels.forEach(function (kernel, i) {
+    var kernelSize = diotresSettings.calculateKernelSize(i);
+    /* kernel.createCircularKernel(kernelSize); */
+    if (kernelSize == 0) {
+      kernel.createCircularKernel(0);
+      //kernel.createGaussianKernel2D(5, 5/7);   
+    } else {
+      kernel.createCircularKernel(kernelSize);
+    }
+  });
+  var pixels = canvasManager.getOrginalImageData();
+  filterDioptre.applyToImage(pixels);
+  illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice.value));
+  canvasManager.setProcessCanvasImageData(pixels);
+}
+function update(newIsPlayground) {
+  isPlayground = newIsPlayground;
+  resetOptions(false);
+  if (!isPlayground) {
+    diotreTester();
+    return;
+  }
   createKernels();
   applyKernel();
 }
 function createKernels() {
   filter.kernels.forEach(function (kernel, i) {
-    kernel.subtract = blurOrSharpenCheckboxs[i].checked;
-    switch (filterTypes[i].value) {
+    kernel.subtract = filterSettings.blurOrSharpenCheckboxValues[i];
+    switch (filterSettings.filterTypeValues[i]) {
       case "gauss":
-        kernel.initGauss(parseFloat(sigmas[i].value), parseFloat(sigmas2[i].value), parseFloat(kernelSizes[i].value));
+        kernel.initGauss(gaussSettings.sigmaValues[i], gaussSettings.sigma2Values[i], kernelSettings.values[i]);
         break;
       case "boxBlur":
-        kernel.initBoxKernel(parseFloat(kernelSizes[i].value));
+        kernel.initBoxKernel(kernelSettings.values[i]);
         break;
+      /*             case "cylinderBlur":
+                      kernel.createCircularKernel(kernelSettings.values[i]);
+                      break; */
       default:
-        console.log("Invalid filter type");
+        console.log("Invalid filter type: " + filterSettings.filterTypeValues[i]);
         break;
     }
   });
 }
 function applyKernel() {
-  // Get data from imported image
-  var canvas = document.getElementById("Mycanvas");
-  var context = canvas.getContext('2d');
-  var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-  var timeFiltersAplliedValuesArray = Array.from(timeFiltersApllied).map(function (input) {
-    return parseInt(input.value);
-  });
-  filter.applyToImage(pixels, timeFiltersAplliedValuesArray);
+  var pixels = canvasManager.getOrginalImageData();
+  filter.applyToImage(pixels, filterSettings.timeFilterAplliedValues);
   illustrator.generatKernelGraph(filter.kernels);
   illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice.value));
-  // Show the processed image
-  var canvas2 = document.getElementById("ProcessCanvas");
-  var context = canvas2.getContext('2d');
-  context.putImageData(pixels, 0, 0);
+  canvasManager.setProcessCanvasImageData(pixels);
 }
-function resetAllOptions() {
-  for (var i = 0; i < kernelSizes.length; i++) {
-    kernalSizesValues[i].value = "0";
-    kernelSizes[i].value = "0";
+function resetOptions(resetAll) {
+  if (resetAll) {
+    kernelSettings.reset();
+    gaussSettings.reset();
+    filterSettings.reset();
+    diotresSettings.reset();
+    imageRowSliceValue.value = "0";
+    imageRowSlice.value = "0";
+    canvasManager.reset();
+    return;
   }
-  ;
-  for (var i = 0; i < sigmas.length; i++) {
-    sigmaValues[i].value = "0";
-    sigmas[i].value = "0";
+  if (!isPlayground) {
+    kernelSettings.reset();
+    gaussSettings.reset();
+    filterSettings.reset();
+    return;
   }
-  ;
-  for (var i = 0; i < timeFiltersApllied.length; i++) {
-    timeFiltersAplliedValues[i].value = "0";
-    timeFiltersApllied[i].value = "0";
-  }
-  ;
-  imageRowSliceValue.value = "0";
-  imageRowSlice.value = "0";
-  // Get data from imported image
-  var canvas = document.getElementById("Mycanvas");
-  var context = canvas.getContext('2d');
-  var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-  // Show the processed image
-  var canvas2 = document.getElementById("ProcessCanvas");
-  var context = canvas2.getContext('2d');
-  context.putImageData(pixels, 0, 0);
+  diotresSettings.reset();
 }
 init();
-},{"./ts/importFile":"ts/importFile.ts","./ts/filter":"ts/filter.ts","./ts/illustrations":"ts/illustrations.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./ts/importFile":"ts/importFile.ts","./ts/filter":"ts/filter.ts","./ts/illustrations":"ts/illustrations.ts","./ts/Elelements/dioptres":"ts/Elelements/dioptres.ts","./ts/Elelements/kernelSettings":"ts/Elelements/kernelSettings.ts","./ts/Elelements/gaussSettings":"ts/Elelements/gaussSettings.ts","./ts/Elelements/filterSettings":"ts/Elelements/filterSettings.ts","./ts/Elelements/canvasManager":"ts/Elelements/canvasManager.ts","./ts/filterDioptre":"ts/filterDioptre.ts"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2888,7 +3345,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52296" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51442" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
