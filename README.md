@@ -36,6 +36,25 @@ $ npm run deploy
 ```
 
 
+
+## Dev
+
+### TailwindCSS
+1. Open a terminal and cd into the tailwindcss folder
+```bash
+cd tailwindcss
+```
+
+2. Run the following
+```bash
+npm install -D tailwindcss
+```
+
+3. Start tailwindcss watch
+```bash
+npm tailwindcss -i input.css -o ../app.css --watch
+```
+
 ## Maintainers
 
 [@VictorIbs1307](https://github.com/VictorIbs1307).
