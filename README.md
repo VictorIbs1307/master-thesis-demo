@@ -2,6 +2,8 @@
 
 This repository contains the source code for the demo application that I have developed, to blur and sharpen images.
 
+https://victoribs1307.github.io/master-thesis-demo/
+
 ## Background
 
 This application have been developed regarding my master thesis project on DTU.
