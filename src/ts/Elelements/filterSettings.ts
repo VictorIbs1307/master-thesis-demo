@@ -4,6 +4,7 @@ export class FilterSettings {
     private _filterTypeDropdownFields: NodeListOf<HTMLInputElement>;
     private _blurOrSharpenCheckboxs: NodeListOf<HTMLInputElement>;
     private _colorOptionMenuTabButtons: NodeListOf<HTMLInputElement>;
+    private _colorOptionMenuTabButtonsBorder: NodeListOf<HTMLElement>
     private _colorOptionMenus:  NodeListOf<HTMLElement>
 
     private _timeFilterAplliedValues: number[];
@@ -36,7 +37,9 @@ export class FilterSettings {
         this._filterTypeDropdownFields = document.querySelectorAll<HTMLInputElement>('[id=filterType]');
         this._blurOrSharpenCheckboxs = document.querySelectorAll<HTMLInputElement>('[id=blurOrSharpenCheckbox]');
         this._colorOptionMenuTabButtons = document.querySelectorAll<HTMLInputElement>('[id=colorOptionMenuTab]');
+        this._colorOptionMenuTabButtonsBorder = document.querySelectorAll<HTMLInputElement>('[id=colorOptionMenuTabBorder]');
         this._colorOptionMenus = document.querySelectorAll<HTMLElement>('[id=colorOptionMenu]');
+
         
         this._timeFilterAplliedValues = new Array<number>(this._timeFiltersAplliedSlider.length).fill(0);
         this._filterTypeValues = new Array<string>(this._filterTypeDropdownFields.length).fill("");
@@ -70,21 +73,28 @@ export class FilterSettings {
         
 
         const buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
+        const buttonBorderClasses = ["h-1", "h-3"];
+        const menuClasses = ["hidden", "flex"];
+
         this._colorOptionMenuTabButtons.forEach((button: HTMLInputElement) => {
             button.addEventListener('click', () => {
                 
                 // Turn all non-clicked buttons grey
                 this._colorOptionMenuTabButtons.forEach((otherButton: HTMLInputElement, i: number) => {
-                    otherButton.classList.remove(...buttonColorClasses);
+                    //otherButton.classList.remove(...buttonColorClasses);
+                    this._colorOptionMenus[i].classList.remove(...menuClasses);
+                    this._colorOptionMenuTabButtonsBorder[i].classList.remove(...buttonBorderClasses);
 
                     if (otherButton !== button) {
-                        otherButton.classList.add(buttonColorClasses[3]);
-                        this._colorOptionMenus[i].style.display = "none";
+                        //otherButton.classList.add(buttonColorClasses[3]);
+                        this._colorOptionMenus[i].classList.add(menuClasses[0])
+                        this._colorOptionMenuTabButtonsBorder[i].classList.add(buttonBorderClasses[0]);
                         return;
                     }
                     
-                    otherButton.classList.add(buttonColorClasses[i]);
-                    this._colorOptionMenus[i].style.display = "flex";
+                    //otherButton.classList.add(buttonColorClasses[i]);
+                    this._colorOptionMenus[i].classList.add(menuClasses[1])
+                    this._colorOptionMenuTabButtonsBorder[i].classList.add(buttonBorderClasses[1]);
                     
                 });
             });

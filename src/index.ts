@@ -11,7 +11,11 @@ import { FilterDioptre } from "./ts/filterDioptre";
 
 // #endregion
 // #region variables
-let resetButton = document.querySelector<HTMLInputElement>('#reset-all');
+let resetMenuButton = document.querySelector<HTMLInputElement>('#resetFilterMenuButton');
+let resetCancelButton = document.querySelector<HTMLInputElement>('#resetCancelButton');
+let resetConfirmButton = document.querySelector<HTMLInputElement>('#resetConfirmButton');
+let resetConfirmMenu = document.querySelector<HTMLInputElement>('#resetConfirmMenu');
+
 const inputConfigFile = document.querySelector<HTMLInputElement>('#input-config-file')
 const inputConfigFileButton = document.getElementById('input-config-file-button');
 
@@ -39,9 +43,19 @@ function init() {
     importFileInit(imageRowSlice!);
 
 
-    resetButton!.addEventListener("click", function() {
+    resetConfirmButton!.addEventListener("click", function() {
         resetOptions(true);
         update(false);
+        illustrator.initKernelGraph();
+        resetConfirmMenu!.classList.add("hidden");
+    });
+
+    resetMenuButton!.addEventListener("click", function() {
+        resetConfirmMenu!.classList.remove("hidden");
+    });
+
+    resetCancelButton!.addEventListener("click", function() {
+        resetConfirmMenu!.classList.add("hidden");
     });
 
     inputConfigFileButton!.addEventListener('click', () => { 

@@ -21,10 +21,12 @@ export class Illustrator {
         };
 
         this.plotDefaultKernelLayout = {
+            width: 600,
+            height: 300,
             xaxis: { range: [0, 1] },
             yaxis: { range: [0, 1] },
             margin: {
-                t: 20,
+                t: 10,
                 b: 20,
             }
         };
