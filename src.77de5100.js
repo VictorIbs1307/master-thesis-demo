@@ -120,17 +120,92 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"ts/importFile.ts":[function(require,module,exports) {
 "use strict";
 
+// export function importFileInit(imageRowSlice: HTMLInputElement) {
+//     const input = document.querySelector<HTMLInputElement>('#input-file') as HTMLInputElement;
+//     input.addEventListener('change', function(evt) {
+//         const source = (evt.target as HTMLInputElement).files![0];
+//         const image = new Image();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 function importFileInit(imageRowSlice) {
-  var input = document.querySelector('#input-file');
-  input.addEventListener('change', function (evt) {
+  var canvas = document.getElementById('Mycanvas');
+  var processCanvas = document.getElementById('ProcessCanvas');
+  var fileInput = document.querySelector('#input-file');
+  canvas.width = 600;
+  canvas.height = 350;
+  var gkhead = new Image();
+  var lastX = canvas.width / 2,
+    lastY = canvas.height / 2;
+  var ctx1 = canvas.getContext('2d');
+  var ctx2 = processCanvas.getContext('2d');
+  var ctxArray = [ctx1, ctx2];
+  trackTransforms(ctx1);
+  function redraw() {
+    console.log(ctxArray);
+    ctxArray.forEach(function (ctx) {
+      // Clear the entire canvas
+      var p1 = {
+        x: 0,
+        y: 0
+      };
+      var p2 = {
+        x: canvas.width,
+        y: canvas.height
+      };
+      // var p1 = ctx!.transformedPoint(0, 0);
+      // var p2 = ctx!.transformedPoint(canvas.width, canvas.height);
+      ctx.clearRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+      ctx.drawImage(gkhead, 0, 0);
+    });
+  }
+  redraw();
+  var dragStart, dragged;
+  canvas.addEventListener('mousedown', function (evt) {
+    //document.body.style.mozUserSelect = document.body.style.webkitUserSelect = document.body.style.userSelect = 'none';
+    lastX = evt.offsetX || evt.pageX - canvas.offsetLeft;
+    lastY = evt.offsetY || evt.pageY - canvas.offsetTop;
+    dragStart = ctx1.transformedPoint(lastX, lastY);
+    dragged = false;
+  }, false);
+  canvas.addEventListener('mousemove', function (evt) {
+    lastX = evt.offsetX || evt.pageX - canvas.offsetLeft;
+    lastY = evt.offsetY || evt.pageY - canvas.offsetTop;
+    dragged = true;
+    if (dragStart) {
+      var pt = ctx1.transformedPoint(lastX, lastY);
+      ctx1.translate(pt.x - dragStart.x, pt.y - dragStart.y);
+      ctx2.translate(pt.x - dragStart.x, pt.y - dragStart.y);
+      redraw();
+    }
+  }, false);
+  canvas.addEventListener('mouseup', function () {
+    dragStart = null;
+  }, false);
+  fileInput.addEventListener('change', function (evt) {
     var source = evt.target.files[0];
     var image = new Image();
     image.onload = function () {
-      imageRowSlice.max = String(image.height);
-      drawFrame(this);
+      var hiddenCanvas = document.getElementById("HiddenCanvas");
+      var hiddenCanvasContex = hiddenCanvas.getContext("2d");
+      hiddenCanvas.width = image.width;
+      hiddenCanvas.height = image.height;
+      var hRatio = hiddenCanvas.width / image.width;
+      var vRatio = hiddenCanvas.height / image.height;
+      var ratio = Math.min(hRatio, vRatio);
+      hiddenCanvasContex.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width * ratio, image.height * ratio);
+      imageRowSlice.max = String(canvas.height);
+      gkhead = this;
+      redraw();
+      ctxArray.forEach(function (ctx) {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(gkhead, 0, 0);
+      });
     };
     image.onerror = function () {
       console.log("error loading image!");
@@ -138,52 +213,103 @@ function importFileInit(imageRowSlice) {
     window.URL.revokeObjectURL(image.src);
     image.src = window.URL.createObjectURL(source);
   }, false);
+  gkhead.src = 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png';
+  // Adds ctx.getTransform() - returns an SVGMatrix
+  // Adds ctx.transformedPoint(x,y) - returns an SVGPoint
+  function trackTransforms(ctx) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+    var xform = svg.createSVGMatrix();
+    ctx.getTransform = function () {
+      return xform;
+    };
+    var savedTransforms = [];
+    var save = ctx.save;
+    ctx.save = function () {
+      savedTransforms.push(xform.translate(0, 0));
+      return save.call(ctx);
+    };
+    var restore = ctx.restore;
+    ctx.restore = function () {
+      xform = savedTransforms.pop();
+      return restore.call(ctx);
+    };
+    var scale = ctx.scale;
+    ctx.scale = function (sx, sy) {
+      xform = xform.scaleNonUniform(sx, sy);
+      return scale.call(ctx, sx, sy);
+    };
+    var rotate = ctx.rotate;
+    ctx.rotate = function (radians) {
+      xform = xform.rotate(radians * 180 / Math.PI);
+      return rotate.call(ctx, radians);
+    };
+    var translate = ctx.translate;
+    ctx.translate = function (dx, dy) {
+      xform = xform.translate(dx, dy);
+      return translate.call(ctx, dx, dy);
+    };
+    var transform = ctx.transform;
+    ctx.transform = function (a, b, c, d, e, f) {
+      var m2 = svg.createSVGMatrix();
+      m2.a = a;
+      m2.b = b;
+      m2.c = c;
+      m2.d = d;
+      m2.e = e;
+      m2.f = f;
+      xform = xform.multiply(m2);
+      return transform.call(ctx, a, b, c, d, e, f);
+    };
+    var setTransform = ctx.setTransform;
+    ctx.setTransform = function (a, b, c, d, e, f) {
+      xform.a = a;
+      xform.b = b;
+      xform.c = c;
+      xform.d = d;
+      xform.e = e;
+      xform.f = f;
+      return setTransform.call(ctx, a, b, c, d, e, f);
+    };
+    var pt = svg.createSVGPoint();
+    ctx.transformedPoint = function (x, y) {
+      pt.x = x;
+      pt.y = y;
+      return pt.matrixTransform(xform.inverse());
+    };
+  }
 }
 exports.importFileInit = importFileInit;
-function drawFrame(source) {
-  var MAX_WIDTH = 800;
-  var MAX_HEIGHT = 800;
-  var hiddenCanvas = document.getElementById("HiddenCanvas");
-  var hiddenCanvasContex = hiddenCanvas.getContext("2d");
-  hiddenCanvas.width = source.width;
-  hiddenCanvas.height = source.height;
-  var hRatio = hiddenCanvas.width / source.width;
-  var vRatio = hiddenCanvas.height / source.height;
-  var ratio = Math.min(hRatio, vRatio);
-  hiddenCanvasContex.drawImage(source, 0, 0, source.width, source.height, 0, 0, source.width * ratio, source.height * ratio);
-  var width, height;
-  if ('naturalWidth' in source) {
-    // Check if source is an HTMLImageElement
-    width = source.naturalWidth;
-    height = source.naturalHeight;
-  } else {
-    // Otherwise, assume source is an HTMLVideoElement
-    width = source.videoWidth;
-    height = source.videoHeight;
-  }
-  // Change the resizing logic
-  /*  if (width > height) {
-       if (width > MAX_WIDTH) {
-           height = height * (MAX_WIDTH / width);
-           width = MAX_WIDTH;
-       }
-   } else {
-       if (height > MAX_HEIGHT) {
-           width = width * (MAX_HEIGHT / height);
-           height = MAX_HEIGHT;
-       }
-   } */
-  var canvas = document.getElementById("Mycanvas");
-  var context = canvas.getContext("2d");
-  var canvas2 = document.getElementById("ProcessCanvas");
-  var context2 = canvas.getContext("2d");
-  canvas.width = width;
-  canvas.height = height;
-  context.drawImage(source, 0, 0, width, height);
-  canvas2.width = width;
-  canvas2.height = height;
-  context2.drawImage(source, 0, 0, width, height);
-}
+;
+// function drawFrame(source: HTMLImageElement | HTMLVideoElement) {
+//     var MAX_WIDTH = 800;
+//     var MAX_HEIGHT = 800;
+//     const hiddenCanvas = document.getElementById("HiddenCanvas") as HTMLCanvasElement;
+//     const hiddenCanvasContex = hiddenCanvas.getContext("2d");
+//     hiddenCanvas.width = source.width;
+//     hiddenCanvas.height = source.height;
+//     var hRatio = hiddenCanvas.width / source.width    ;
+//     var vRatio = hiddenCanvas.height / source.height  ;
+//     var ratio  = Math.min ( hRatio, vRatio );
+//     hiddenCanvasContex!.drawImage(source, 0,0, source.width, source.height, 0,0,source.width*ratio, source.height*ratio);
+//     var width, height;
+//     if ('naturalWidth' in source) { // Check if source is an HTMLImageElement
+//         width = source.naturalWidth;
+//         height = source.naturalHeight;
+//       } else { // Otherwise, assume source is an HTMLVideoElement
+//         width = source.videoWidth;
+//         height = source.videoHeight;
+//       }
+//     const canvas = document.getElementById("Mycanvas") as HTMLCanvasElement;
+//     const context = canvas.getContext("2d");
+//     const canvas2 = document.getElementById("ProcessCanvas") as HTMLCanvasElement;
+//     const context2 = canvas.getContext("2d");
+//     canvas.width = width;
+//     canvas.height = height;
+//     context!.drawImage(source, 0, 0, width, height);
+//     canvas2.width = width
+//     canvas2.height = height;
+//     context2!.drawImage(source, 0, 0, width, height);
+// }
 },{}],"ts/kernel.ts":[function(require,module,exports) {
 "use strict";
 
@@ -2445,6 +2571,8 @@ var Illustrator = /** @class */function () {
       displayModeBar: false
     };
     this.plotDefaultKernelLayout = {
+      width: 600,
+      height: 300,
       xaxis: {
         range: [0, 1]
       },
@@ -2452,7 +2580,7 @@ var Illustrator = /** @class */function () {
         range: [0, 1]
       },
       margin: {
-        t: 20,
+        t: 10,
         b: 20
       }
     };
@@ -2921,6 +3049,7 @@ var FilterSettings = /** @class */function () {
     this._filterTypeDropdownFields = document.querySelectorAll('[id=filterType]');
     this._blurOrSharpenCheckboxs = document.querySelectorAll('[id=blurOrSharpenCheckbox]');
     this._colorOptionMenuTabButtons = document.querySelectorAll('[id=colorOptionMenuTab]');
+    this._colorOptionMenuTabButtonsBorder = document.querySelectorAll('[id=colorOptionMenuTabBorder]');
     this._colorOptionMenus = document.querySelectorAll('[id=colorOptionMenu]');
     this._timeFilterAplliedValues = new Array(this._timeFiltersAplliedSlider.length).fill(0);
     this._filterTypeValues = new Array(this._filterTypeDropdownFields.length).fill("");
@@ -2948,19 +3077,25 @@ var FilterSettings = /** @class */function () {
       _this._blurOrSharpenCheckboxValues[i] = checkbox.checked;
     });
     var buttonColorClasses = ["bg-red-200", "bg-green-200", "bg-blue-200", "bg-gray-300"];
+    var buttonBorderClasses = ["h-1", "h-3"];
+    var menuClasses = ["hidden", "flex"];
     this._colorOptionMenuTabButtons.forEach(function (button) {
       button.addEventListener('click', function () {
         // Turn all non-clicked buttons grey
         _this._colorOptionMenuTabButtons.forEach(function (otherButton, i) {
-          var _a;
-          (_a = otherButton.classList).remove.apply(_a, buttonColorClasses);
+          var _a, _b;
+          //otherButton.classList.remove(...buttonColorClasses);
+          (_a = _this._colorOptionMenus[i].classList).remove.apply(_a, menuClasses);
+          (_b = _this._colorOptionMenuTabButtonsBorder[i].classList).remove.apply(_b, buttonBorderClasses);
           if (otherButton !== button) {
-            otherButton.classList.add(buttonColorClasses[3]);
-            _this._colorOptionMenus[i].style.display = "none";
+            //otherButton.classList.add(buttonColorClasses[3]);
+            _this._colorOptionMenus[i].classList.add(menuClasses[0]);
+            _this._colorOptionMenuTabButtonsBorder[i].classList.add(buttonBorderClasses[0]);
             return;
           }
-          otherButton.classList.add(buttonColorClasses[i]);
-          _this._colorOptionMenus[i].style.display = "flex";
+          //otherButton.classList.add(buttonColorClasses[i]);
+          _this._colorOptionMenus[i].classList.add(menuClasses[1]);
+          _this._colorOptionMenuTabButtonsBorder[i].classList.add(buttonBorderClasses[1]);
         });
       });
     });
@@ -3149,7 +3284,10 @@ var canvasManager_1 = require("./ts/Elelements/canvasManager");
 var filterDioptre_1 = require("./ts/filterDioptre");
 // #endregion
 // #region variables
-var resetButton = document.querySelector('#reset-all');
+var resetMenuButton = document.querySelector('#resetFilterMenuButton');
+var resetCancelButton = document.querySelector('#resetCancelButton');
+var resetConfirmButton = document.querySelector('#resetConfirmButton');
+var resetConfirmMenu = document.querySelector('#resetConfirmMenu');
 var inputConfigFile = document.querySelector('#input-config-file');
 var inputConfigFileButton = document.getElementById('input-config-file-button');
 var imageRowSlice = document.querySelector('#image-row-slice');
@@ -3167,9 +3305,17 @@ var canvasManager = new canvasManager_1.CanvasManager();
 var isPlayground = false;
 function init() {
   importFile_1.importFileInit(imageRowSlice);
-  resetButton.addEventListener("click", function () {
+  resetConfirmButton.addEventListener("click", function () {
     resetOptions(true);
     update(false);
+    illustrator.initKernelGraph();
+    resetConfirmMenu.classList.add("hidden");
+  });
+  resetMenuButton.addEventListener("click", function () {
+    resetConfirmMenu.classList.remove("hidden");
+  });
+  resetCancelButton.addEventListener("click", function () {
+    resetConfirmMenu.classList.add("hidden");
   });
   inputConfigFileButton.addEventListener('click', function () {
     inputConfigFile.click();
@@ -3345,7 +3491,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51442" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56893" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
