@@ -79,7 +79,7 @@ function init() {
                     gaussSettings.updateSigmaValue(i, element.sigma);
                     gaussSettings.updateSigma2Value(i, element.sigma2);
                 });
-                update(false);
+                update(true);
             } catch (error) {
                 console.log('Error parsing JSON');
             }
@@ -131,7 +131,7 @@ function init() {
                 kernelSize: filter.kernels[i].kernelSize,
                 sigma: gaussSettings.sigmaValues[i],
                 sigma2: gaussSettings.sigma2Values[i],
-                timeFiltersApllied: filterSettings.filterTypeValues[i], //timeFiltersApllied[i].value,
+                timeFiltersApllied: filterSettings.timeFilterAplliedValues[i], //timeFiltersApllied[i].value,
             });
         });
         const contentString = JSON.stringify(contentJson);
@@ -208,13 +208,16 @@ function createKernels(){
 function applyKernel() {
     let pixels = canvasManager.getOrginalImageData();
 
+    console.log(filterSettings);
     filter.applyToImage(pixels, filterSettings.timeFilterAplliedValues);
+
 
     illustrator.generatKernelGraph(filter.kernels);
     illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice!.value));
 
     canvasManager.setProcessCanvasImageData(pixels);
 }
+
 
 function resetOptions(resetAll: boolean) {
     if (resetAll) {

@@ -9,7 +9,9 @@ export class Filter {
 
     applyToImage(pixels: ImageData, timeFiltersApllied: number[]) {
         this.kernels.forEach((kernel, i) => {
+            
             if (kernel.sigma !== 0){
+                
                 this.applyKernel(pixels, i, kernel.self, kernel.subtract, timeFiltersApllied[i]);
             }
         });
@@ -17,6 +19,7 @@ export class Filter {
 
     applyKernel(pixels: ImageData, colorChannel: number, kernel: Float32Array, subtract: boolean, timeFiltersApllied: number) {
         if (pixels !== undefined && pixels !== null) {
+            
             var data = pixels.data;
             var w = pixels.width;
             var h = pixels.height;
