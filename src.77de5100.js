@@ -3336,7 +3336,7 @@ function init() {
           gaussSettings.updateSigmaValue(i, element.sigma);
           gaussSettings.updateSigma2Value(i, element.sigma2);
         });
-        update(false);
+        update(true);
       } catch (error) {
         console.log('Error parsing JSON');
       }
@@ -3378,7 +3378,7 @@ function init() {
         kernelSize: filter.kernels[i].kernelSize,
         sigma: gaussSettings.sigmaValues[i],
         sigma2: gaussSettings.sigma2Values[i],
-        timeFiltersApllied: filterSettings.filterTypeValues[i]
+        timeFiltersApllied: filterSettings.timeFilterAplliedValues[i]
       });
     });
     var contentString = JSON.stringify(contentJson);
@@ -3441,6 +3441,7 @@ function createKernels() {
 }
 function applyKernel() {
   var pixels = canvasManager.getOrginalImageData();
+  console.log(filterSettings);
   filter.applyToImage(pixels, filterSettings.timeFilterAplliedValues);
   illustrator.generatKernelGraph(filter.kernels);
   illustrator.generatFrequencyGraph(pixels, parseInt(imageRowSlice.value));
@@ -3491,7 +3492,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56893" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61078" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
